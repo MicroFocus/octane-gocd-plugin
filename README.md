@@ -1,3 +1,5 @@
+[![Build status](https://ci.appveyor.com/api/projects/status/y2e0msiuq88o0ddt?svg=true)](https://ci.appveyor.com/project/m-seldin/octane-gocd-plugin-isjhc)
+
 # MicroFocus ALM Octane GoCD plugin 
 This plugin integrates GoCD with MicroFocus ALM Octane. Making GoCD pipelines accessible in MicroFocus ALM Octane and allowing to
 analyze build quality and test results.
