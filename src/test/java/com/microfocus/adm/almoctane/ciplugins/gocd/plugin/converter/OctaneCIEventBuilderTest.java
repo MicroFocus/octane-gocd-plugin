@@ -32,13 +32,13 @@ public class OctaneCIEventBuilderTest {
 
 	@Test
 	public void testParsingFakeZuluDate() {
-		Date date = OctaneCIEventBuilder.parseTime("2017-11-07T14:26:08.720Z");
+		Date date = StatusInfoWrapper.parseTime("2017-11-07T14:26:08.720Z");
 		Assert.assertNotNull("date should not be null", date);
 	}
 
 	@Test
 	public void testParsingRFC822TimezoneDate() {
-		Date date = OctaneCIEventBuilder.parseTime("2017-11-07T14:26:08.720+0100");
+		Date date = StatusInfoWrapper.parseTime("2017-11-07T14:26:08.720+0100");
 		Assert.assertNotNull("date should not be null", date);
 	}
 }

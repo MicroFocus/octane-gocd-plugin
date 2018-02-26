@@ -23,19 +23,19 @@ package com.microfocus.adm.almoctane.ciplugins.gocd.plugin.converter;
 import com.hp.octane.integrations.OctaneSDK;
 import com.hp.octane.integrations.dto.DTOFactory;
 import com.hp.octane.integrations.dto.causes.CIEventCause;
+import com.hp.octane.integrations.dto.causes.CIEventCauseType;
 import com.hp.octane.integrations.dto.events.CIEvent;
 import com.hp.octane.integrations.dto.events.CIEventType;
+import com.hp.octane.integrations.dto.events.PhaseType;
+import com.hp.octane.integrations.dto.scm.SCMData;
 import com.hp.octane.integrations.dto.snapshots.CIBuildResult;
+import com.microfocus.adm.almoctane.ciplugins.gocd.dto.GoPipelineConfig;
 import com.microfocus.adm.almoctane.ciplugins.gocd.dto.GoPipelineInstance;
+import com.microfocus.adm.almoctane.ciplugins.gocd.dto.GoStageConfig;
 import com.microfocus.adm.almoctane.ciplugins.gocd.dto.GoStageInstance;
-import com.microfocus.adm.almoctane.ciplugins.gocd.service.GoApiClient;
-import com.microfocus.adm.almoctane.ciplugins.gocd.service.GoGetPipelineHistory;
-import com.microfocus.adm.almoctane.ciplugins.gocd.service.GoGetPipelineInstance;
-import com.microfocus.adm.almoctane.ciplugins.gocd.service.GoGetStageInstance;
+import com.microfocus.adm.almoctane.ciplugins.gocd.service.*;
 import com.thoughtworks.go.plugin.api.logging.Logger;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -81,31 +81,182 @@ public class OctaneCIEventBuilder {
 		}
 
 		final String pipelineName = statusInfo.getPipelineName();
-		final Integer pipelineCounter = Integer.valueOf(statusInfo.getPipelineCounter());
-		final GoPipelineInstance pipelineInstance = new GoGetPipelineInstance(goApiClient).get(pipelineName, pipelineCounter);
-		final List<GoStageInstance> stages = pipelineInstance.getStages();
+		final String stageName = statusInfo.getStageName();
+		final GoPipelineConfig pipelineConfig = new GoGetPipelineConfig(goApiClient).get(pipelineName);
+		final List<GoStageConfig> stages = pipelineConfig.getStages();
 
-		if (PipelineStageState.Building.name().equals(statusInfo.getStageStatus())) {
-			// only generate a start-event if the current stage is the very first one in the pipeline.
-			if (stages != null && !stages.isEmpty() &&
-				stages.get(0).getName().equals(String.valueOf(statusInfo.getStageName()))) {
-				sendStartEvent(statusInfo);
-			}
-		} else if (PipelineStageState.Passed.name().equals(statusInfo.getStageStatus())) {
-			// whenever a stage passes check whether it is the last stage of this pipeline; only then send an end-event.
-			if (stages != null && !stages.isEmpty() &&
-				stages.get(stages.size() - 1).getName().equals(String.valueOf(statusInfo.getStageName()))) {
-				sendEndEvent(statusInfo);
-			}
-		} else {
-			// all other state changes end a pipeline build.
-			sendEndEvent(statusInfo);
+		switch (statusInfo.getStageStatus()){
+			case Building:
+				if(isFirstStage(stageName,stages)){
+					sendPipelineStartEvent(statusInfo);
+					//send pipeline start event
+				}
+			//	sendStageStartEvent(statusInfo);
+				break;
+
+			case Passed:
+				if(isLastStage(stageName,stages)){
+					sendPipelineEndEvent(statusInfo);
+					//send pipeline end event
+				} else {
+					//send stage end event
+					sendStageEndEvent(statusInfo);
+				}
+				break;
+			case Failed:
+			case Cancelled:
+				sendPipelineEndEvent(statusInfo);
+				break;
+			default:
+				sendPipelineEndEvent(statusInfo);
 		}
 	}
 
-	private void sendStartEvent(StatusInfoWrapper statusInfo) {
+	private List<CIEventCause> getCauses(StatusInfoWrapper statusInfo) {
+
+		CIEventCause cause = DTOFactory.getInstance().newDTO(CIEventCause.class)
+			.setType(CIEventCauseType.UPSTREAM)
+			.setProject(statusInfo.getPipelineName())
+			.setBuildCiId(statusInfo.getPipelineCounter());
+		List<CIEventCause> causeList =new ArrayList<>();
+		causeList.add(cause);
+		return causeList;
+
+	}
+
+	private CIBuildResult getResult(PipelineStageState stageState){
+		switch (stageState) {
+			case Passed: return CIBuildResult.SUCCESS;
+			case Failed: return CIBuildResult.FAILURE;
+			case Cancelled:return CIBuildResult.ABORTED;
+			default: return CIBuildResult.FAILURE;
+		}
+	}
+
+	private boolean isLastStage(String stageName, List<GoStageConfig> pipelineStages) {
+
+		// whenever a stage passes check whether it is the last stage of this pipeline; only then send an end-event.
+		if (pipelineStages != null && !pipelineStages.isEmpty() &&
+			pipelineStages.get(pipelineStages.size() - 1).getName().equals(String.valueOf(stageName))) {
+			return true;
+		}
+		return false;
+	}
+
+	private boolean isFirstStage(String stageName, List<GoStageConfig> pipelineStages){
+
+		// only generate a start-event if the current stage is the very first one in the pipeline.
+		if (pipelineStages != null && !pipelineStages.isEmpty() &&
+			pipelineStages.get(0).getName().equals(String.valueOf(stageName))) {
+			return true;
+
+		}
+
+		return false;
+	}
+
+	private void sendStageStartEvent(StatusInfoWrapper statusInfo){
+		final String stageName = statusInfo.getStageName();
+		final String pipelineCounter = statusInfo.getPipelineCounter();
+		CIEvent event = DTOFactory.getInstance().newDTO(CIEvent.class)
+			.setEventType(CIEventType.STARTED)
+			.setProject(stageName)
+			.setProjectDisplayName(stageName)
+			.setBuildCiId(pipelineCounter)
+			.setNumber(pipelineCounter)
+			.setCauses(getCauses(statusInfo));
+
+		Date createTime = statusInfo.getStageCreateTime();
+		if (createTime != null) {
+			event.setStartTime(createTime.getTime());
+		}
+
+		octaneInstance.getEventsService().publishEvent(event);
+	}
+
+	private void sendPipelineSCMEvent(StatusInfoWrapper statusInfo, GoPipelineInstance pipelineInstance){
+
+		if (pipelineInstance != null) {
+
+			SCMData scmData = new OctaneSCMDataBuilder().retrieveFrom(pipelineInstance);
+			if(scmData != null && scmData.getCommits()!=null) {
+				CIEvent scmEvent = DTOFactory.getInstance().newDTO(CIEvent.class)
+					.setEventType(CIEventType.SCM)
+					.setProject(statusInfo.getPipelineName())
+					.setProjectDisplayName(statusInfo.getPipelineName())
+					.setBuildCiId(statusInfo.getPipelineCounter())
+					.setNumber(statusInfo.getPipelineCounter())
+					.setCauses(Collections.<CIEventCause>emptyList())
+					.setPhaseType(PhaseType.INTERNAL)
+					.setScmData(scmData);
+
+				OctaneSDK.getInstance().getEventsService().publishEvent(scmEvent);
+			}
+		}
+	}
+
+//	private void sendStageTestResults(StatusInfoWrapper statusInfo, GoPipelineInstance pipelineInstance){
+//
+//			Log.debug("Retrieving test results for '" + jobId + "' and buildNumber '" + buildNumber + "'");
+//			final TestsResult result = DTOFactory.getInstance().newDTO(TestsResult.class)
+//				.setBuildContext(DTOFactory.getInstance().newDTO(BuildContext.class).setServerId(goServerID))
+//				.setTestRuns(new ArrayList<TestRun>());
+//
+//			/** Use the same client for all requests in this method. Notice that {@link GoGetAllArtifacts}
+//			 * needs an authentication cookie which is received by the client when performing an API request. */
+//			if (pipelineInstance != null && pipelineInstance.getStages() != null) {
+//				result.getBuildContext()
+//					.setJobId(statusInfo.getStageName())
+//					.setJobName(statusInfo.getStageName())
+//					.setBuildId(statusInfo.getPipelineCounter())
+//					.setBuildName(pipelineInstance.getLabel());
+//
+//				List<GoArtifact> artifacts = new GoGetAllArtifacts(goApiClient).get(statusInfo.getPipelineName(),
+//					statusInfo.getPipelineCounter(), statusInfo.getStageName(), Integer.valueOf(statusInfo.getPipelineCounter()), jobInstance.getName());
+//				result.getTestRuns().addAll(new OctaneTestResultsBuilder(goApiClient).convert(artifacts));
+//
+//
+////				for (GoStageInstance stageInstance : pipelineInstance.getStages()) {
+////					if (stageInstance.getJobs() != null) {
+////						for (GoJobInstance jobInstance : stageInstance.getJobs()) {
+////							List<GoArtifact> artifacts = new GoGetAllArtifacts(goApiClient).get(statusInfo.getPipelineName(),
+////								statusInfo.getPipelineCounter(), statusInfo.getStageName(), Integer.valueOf(stageInstance.getCounter()), jobInstance.getName());
+////							result.getTestRuns().addAll(new OctaneTestResultsBuilder(goApiClient).convert(artifacts));
+////						}
+////					}
+////				}
+//			}
+//
+//			if(result.getTestRuns() != null && !result.getTestRuns().isEmpty()){
+//				try {
+//					OctaneSDK.getInstance().getTestsService().pushTestsResult(result);
+//				} catch (IOException e) {
+//					e.printStackTrace();
+//				}
+//			}
+//	}
+
+	private void sendStageEndEvent(StatusInfoWrapper statusInfo) {
+
+		final String stageName = statusInfo.getStageName();
+		final String pipelineCounter = statusInfo.getPipelineCounter();
+		CIEvent event = DTOFactory.getInstance().newDTO(CIEvent.class)
+			.setEventType(CIEventType.FINISHED)
+			.setProject(stageName)
+			.setProjectDisplayName(stageName)
+			.setBuildCiId(pipelineCounter)
+			.setNumber(pipelineCounter)
+			.setCauses(getCauses(statusInfo))
+			.setResult(getResult(statusInfo.getStageStatus()));
+
+		//setTime(event, statusInfo);
+
+		octaneInstance.getEventsService().publishEvent(event);
+	}
+
+	private void sendPipelineStartEvent(StatusInfoWrapper statusInfo) {
 		final String pipelineName = statusInfo.getPipelineName();
-		final String pipelineCounter = String.valueOf(statusInfo.getPipelineCounter());
+		final String pipelineCounter =statusInfo.getPipelineCounter();
 		CIEvent event = DTOFactory.getInstance().newDTO(CIEvent.class)
 			.setEventType(CIEventType.STARTED)
 			.setProject(pipelineName)
@@ -114,7 +265,7 @@ public class OctaneCIEventBuilder {
 			.setNumber(pipelineCounter)
 			.setCauses(Collections.<CIEventCause>emptyList());
 
-		Date createTime = parseTime(String.valueOf(statusInfo.getStageCreateTime()));
+		Date createTime = statusInfo.getStageCreateTime();
 		if (createTime != null) {
 			event.setStartTime(createTime.getTime());
 		}
@@ -135,23 +286,17 @@ public class OctaneCIEventBuilder {
 		octaneInstance.getEventsService().publishEvent(event);
 	}
 
-	private void sendEndEvent(StatusInfoWrapper statusInfo) {
+	private void sendPipelineEndEvent(StatusInfoWrapper statusInfo) {
 		final String pipelineName = statusInfo.getPipelineName();
-		final String pipelineCounter = String.valueOf(statusInfo.getPipelineCounter());
+		final String pipelineCounter = statusInfo.getPipelineCounter();
 		CIEvent event = DTOFactory.getInstance().newDTO(CIEvent.class)
 			.setEventType(CIEventType.FINISHED)
 			.setProject(pipelineName)
 			.setProjectDisplayName(pipelineName)
 			.setBuildCiId(pipelineCounter)
 			.setNumber(pipelineCounter)
-			.setCauses(Collections.<CIEventCause>emptyList());
-
-		PipelineStageState stageState = statusInfo.getStageStatus();
-		switch (stageState) {
-			case Passed: event.setResult(CIBuildResult.SUCCESS); break;
-			case Failed: event.setResult(CIBuildResult.FAILURE); break;
-			case Cancelled: event.setResult(CIBuildResult.ABORTED); break;
-		}
+			.setCauses(Collections.<CIEventCause>emptyList())
+			.setResult(getResult(statusInfo.getStageStatus()));
 
 		// determine the start-time of this pipeline.
 		GoPipelineInstance pipelineInstance = new GoGetPipelineInstance(goApiClient).get(pipelineName, Integer.valueOf(pipelineCounter));
@@ -159,41 +304,16 @@ public class OctaneCIEventBuilder {
 			Long firstScheduledDate = pipelineInstance.getFirstScheduledDate();
 			// correct the start time to the first documented date.
 			event.setStartTime(firstScheduledDate);
-			Date lastTransitionTime = parseTime(String.valueOf(statusInfo.getStageLastTransitionTime()));
+			Date lastTransitionTime = statusInfo.getStageLastTransitionTime();
 			if (lastTransitionTime != null && firstScheduledDate != null) {
 				event.setDuration(lastTransitionTime.getTime() - firstScheduledDate); // in ms
 			}
-			// add repository information to the event.
-			event.setScmData(new OctaneSCMDataBuilder().retrieveFrom(pipelineInstance));
 		}
 
 		octaneInstance.getEventsService().publishEvent(event);
 		// tell octane to request the test results.
+		sendPipelineSCMEvent(statusInfo, pipelineInstance);
 		octaneInstance.getTestsService().enqueuePushTestsResult(pipelineName, pipelineCounter);
-	}
-
-	/**
-	 * This helper method help parsing a given time into a {@link Date}.
-	 */
-	public static Date parseTime(String time) {
-		if (time == null) {
-			return null;
-		}
-		/* Even though the time looks like being a Zulu-time it probably isn't.
-		 * Please see whether bug https://github.com/gocd/gocd/issues/3989 is still open.
-		 * The StageConverter used to render the time has probably used the default local to
-		 * render the time and did just append the letter 'Z'. */
-		try { // try to parse the time with an RFC822 timezone
-			return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").parse(time);
-		} catch (ParseException e) {
-			Log.warn("Could not parse given time with RFC822 timezone '" + time + "'");
-		}
-		try { // try to parse the time with the pattern the StageConverter was probably using
-			return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").parse(time);
-		} catch (ParseException e) {
-			Log.error("Could not parse given time with the assumed pattern", e);
-		}
-		return null; // giving up
 	}
 
 	/**

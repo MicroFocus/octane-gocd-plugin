@@ -67,7 +67,7 @@ import java.util.List;
 public class OctaneGoCDPlugin implements GoPlugin {
 
 	/** This ID is referred to in the plugin.xml */
-	public static String PluginID = "com.microfocus.adm.almoctane.ciplugins.gocd.gocd";
+	public static String PluginID = "com.microfocus.adm.almoctane.ciplugins.gocd";
 
 	private static final Logger Log = Logger.getLoggerFor(OctaneGoCDPlugin.class);
 

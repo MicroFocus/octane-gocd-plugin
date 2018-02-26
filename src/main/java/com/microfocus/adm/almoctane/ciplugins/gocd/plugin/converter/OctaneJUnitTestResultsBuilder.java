@@ -26,18 +26,17 @@ import com.hp.octane.integrations.dto.tests.TestRun;
 import com.hp.octane.integrations.dto.tests.TestRunError;
 import com.hp.octane.integrations.dto.tests.TestRunResult;
 import com.hp.octane.integrations.dto.tests.TestsResult;
-import com.microfocus.adm.almoctane.ciplugins.gocd.service.GoApiClient;
-import com.microfocus.adm.almoctane.ciplugins.gocd.service.GoGetArtifact;
 import com.microfocus.adm.almoctane.ciplugins.gocd.report.junit.JUnitReportParser;
 import com.microfocus.adm.almoctane.ciplugins.gocd.report.junit.dom.JUnitFailure;
 import com.microfocus.adm.almoctane.ciplugins.gocd.report.junit.dom.JUnitTestCase;
 import com.microfocus.adm.almoctane.ciplugins.gocd.report.junit.dom.JUnitTestSuite;
+import com.microfocus.adm.almoctane.ciplugins.gocd.service.GoApiClient;
+import com.microfocus.adm.almoctane.ciplugins.gocd.service.GoGetArtifact;
 import com.thoughtworks.go.plugin.api.logging.Logger;
 
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -76,7 +75,7 @@ public class OctaneJUnitTestResultsBuilder {
 			long startTime;
 			try {
 				startTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").parse(testSuite.getTimestamp()).getTime();
-			} catch (ParseException e) {
+			} catch (Exception e) {
 				Log.warn("Could not parse timestamp '" + testSuite.getTimestamp() + "' using current timestamp instead");
 				startTime = new Date().getTime();
 			}

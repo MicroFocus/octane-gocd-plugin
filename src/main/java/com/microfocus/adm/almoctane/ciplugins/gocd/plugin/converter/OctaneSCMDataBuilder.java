@@ -40,7 +40,7 @@ public class OctaneSCMDataBuilder {
 		if (buildCause != null && buildCause.getMaterialRevision() != null) {
 			// search for the repository.
 			for (GoMaterialRevision materialRevision : buildCause.getMaterialRevision()) {
-				if (materialRevision.getMaterial() != null && !"Pipeline".equals(materialRevision.getMaterial().getType())) {
+				if (materialRevision.isChanged() && materialRevision.getMaterial() != null && !"Pipeline".equals(materialRevision.getMaterial().getType())) {
 					if (materialRevision.getMaterial() != null) {
 						scmData.setRepository(retrieveFrom(materialRevision.getMaterial()));
 					}
