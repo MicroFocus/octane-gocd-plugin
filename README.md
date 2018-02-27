@@ -1,3 +1,5 @@
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/96323a38b84b4fce981761d3f30b99ec)](https://www.codacy.com/app/HPSoftware/octane-gocd-plugin?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=MicroFocus/octane-gocd-plugin&amp;utm_campaign=Badge_Grade)
+
 [![Build status](https://ci.appveyor.com/api/projects/status/y2e0msiuq88o0ddt?svg=true)](https://ci.appveyor.com/project/m-seldin/octane-gocd-plugin-isjhc)
 
 # MicroFocus ALM Octane GoCD plugin 
