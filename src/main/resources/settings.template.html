@@ -18,22 +18,22 @@
 -->
 <div class="role-users row expanded">
 	<div style="padding-bottom: 2px; border-bottom: 1px solid #CCC; margin-bottom: 10px; margin-top: 10px">
-	<label class="role-users-header">ALM Octane Configuration</label>
+		<label class="role-users-header">ALM Octane Configuration</label>
 	</div>
 
 	<div class="form_item_block medium-6" style="padding-left: 15px">
 		<label for="octane-gocd-plugin-server-url">Location<span class="asterisk" style="color: red">*</span></label>
-		<input id="octane-gocd-plugin-server-url" ng-model="serverURL" type="text" placeholder="ALM Octane application location: http://octane-server/ui/?p=&lt;SharedSpaceID&gt;"/>
+		<input id="octane-gocd-plugin-server-url" ng-model="serverURL" type="text" placeholder="ALM Octane application location: http://octane-server/ui/?p=&lt;SpaceID&gt;"/>
 		<span class="form_error" ng-show="GOINPUTNAME[serverURL].$error.server">{{GOINPUTNAME[serverURL].$error.server}}</span>
 	</div>
 	<div class="form_item_block medium-6" style="padding-left: 15px">
 		<label for="octane-gocd-plugin-client-id">Client ID<span class="asterisk" style="color: red">*</span></label>
-		<input id="octane-gocd-plugin-client-id" ng-model="clientID" type="text" placeholder="Client ID used for logging into the ALM Octane server"/>
+		<input id="octane-gocd-plugin-client-id" ng-model="clientID" type="text" placeholder="Client ID for connecting to ALM Octane"/>
 		<span class="form_error" ng-show="GOINPUTNAME[clientID].$error.server">{{GOINPUTNAME[clientID].$error.server}}</span>
 	</div>
 	<div class="form_item_block medium-6" style="padding-left: 15px">
 		<label for="octane-gocd-plugin-client-secret">Client Secret<span class="asterisk" style="color: red">*</span></label>
-		<input id="octane-gocd-plugin-client-secret" ng-model="clientSecret" type="password" placeholder="Client secret used for logging into the ALM Octane server"/>
+		<input id="octane-gocd-plugin-client-secret" ng-model="clientSecret" type="password" placeholder="Client secret for connecting to ALM Octane"/>
 		<span class="form_error" ng-show="GOINPUTNAME[clientSecretError].$error.server">{{GOINPUTNAME[clientSecretError].$error.server}}</span>
 	</div>
 
@@ -47,13 +47,13 @@
 
 	<div class="form_item_block medium-6" style="padding-left: 15px">
 		<label for="octane-gocd-plugin-go-api-username">Username<span class="asterisk" style="color: red">*</span></label>
-		<input id="octane-gocd-plugin-go-api-username" ng-model="goUsername" type="text"/>
+		<input id="octane-gocd-plugin-go-api-username" ng-model="goUsername" type="text" placeholder="The API username for accessing the GoCD server"/>
 		<span class="form_error" ng-show="GOINPUTNAME[goUsername].$error.server">{{GOINPUTNAME[goUsername].$error.server}}</span>
 	</div>
 
 	<div class="form_item_block medium-6" style="padding-left: 15px">
 		<label for="octane-gocd-plugin-go-api-password">Password<span class="asterisk" style="color: red">*</span></label>
-		<input id="octane-gocd-plugin-go-api-password" ng-model="goPassword" type="text"/>
+		<input id="octane-gocd-plugin-go-api-password" ng-model="goPassword" type="text"  placeholder="The password for the username you provided"/>
 		<span class="form_error" ng-show="GOINPUTNAME[goPasswordError].$error.server">{{GOINPUTNAME[goPasswordError].$error.server}}</span>
 	</div>
 
