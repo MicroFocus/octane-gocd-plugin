@@ -1,5 +1,7 @@
 description = 'GoCD Plugin for connecting with MicroFocus ALM Octane'
 
+version = "1.0-SNAPSHOT"
+
 apply plugin: 'base' // provides cleaning task
 apply plugin: 'java'
 apply plugin: 'idea'
@@ -30,4 +32,6 @@ jar {
 	into('lib') { // as specified by GoCD all necessary libraries should be bundled in lib.
 		from configurations.runtime
 	}
+
+	baseName 'gocd-ci-plugin'
 }
