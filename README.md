@@ -2,68 +2,58 @@
 
 [![Build status](https://ci.appveyor.com/api/projects/status/y2e0msiuq88o0ddt?svg=true)](https://ci.appveyor.com/project/m-seldin/octane-gocd-plugin-isjhc)
 
-# MicroFocus ALM Octane GoCD plugin 
-This plugin integrates GoCD with MicroFocus ALM Octane. Making GoCD pipelines accessible in MicroFocus ALM Octane and allowing to
-analyze build quality and test results.
+#Micro Focus ALM Octane GoCD plugin 
+This plugin integrates GoCD with ALM Octane, enabling ALM Octane to display GoCD pipelines, trigger pipeline runs, and track build and test run results, as well as committed changes. 
 
-## Requirements
+Note: You can connect your GoCD server to only one Space in ALM Octane. The same GoCD server cannot connect to multiple spaces or ALM Octane instances.
 
-This plugin requires GoCD to run in version 17.9 or higher.
+ ##Requirements 
+This plugin requires GoCD version 17.9 or later.
 
-## How to install
-This plugin has to be installed on your GoCD-server. Take the following steps:
-1. Download the jar-file of this plugin and store it on your go-server in `<go-server-directory>/plugins/external/`.
-2. Restart your GoCD-server.
-3. You now need to configure the plugin to tell against which MicroFocus ALM Octane server it should connect:
-    1. In GoCD open `Admin` and `Plugins`: you should see the *OctaneGoCDPlugin*. Click the cogwheel in front of it.
-    2. Set the *Server URL* of your Octane server. This URL is supposed to look like
-       `http://hostname:port/ui/?p=<SharedSpaceID>`.
-    3. Set the *Client ID* and *Client Secret*. These are the credentials on your Octane server the plugin should use.
-    4. Set the *Go API Username* and *Go API Password*. These are the credentials the plugin uses to access the Go server.
-    5. When you try to save your settings, the connection to Octane is tested. Also the given credentials to the Go server
-	   API are given a try. If both work your settings will be saved, else validation warning will be shown.
-4. Now you should be able to add your GoCD server in Octane as a *CI Server*:
-    1. In Octane click the cogwheel to enter the admin settings for your spaces.
-    2. Open the tab `DevOps` and open the section `CI Servers`.
-    3. Click the plus to add a new CI Server.
-    4. You should be able to see your GoCD server in the dropdown list, select it and give it a speaking name. Save it.
-    5. Back in the overview of *CI Servers* you should now see your Go server, with its *name*, *instance id*, *server type*,
-       *URL*, *connection status* and *SDK version*.
+Before you install the plugin, obtain an API Access Client ID and Client secret from your ALM Octane’s shared space admin.<br /> 
+The plugin uses these for authentication when communicating with ALM.
+ 
+ ###How to install 
+Install this plugin on your GoCD server:
 
-When everything is set up correctly you can start adding pipelines in Octane.
+1. Download the plugin’s **.jar** file and store it on your GoCd server in `<go-server-directory>/plugins/external/`.
+2. Restart your GoCD server.
+3. Configure the plugin to connect to ALM Octane:
+	1. In GoCD, open **Admin > Plugins**: 
+You should see the **ALM Octane GoCD Plugin**. Click the cogwheel in front of it. 
+	2. Enter the The URL of the ALM Octane server, using its fully qualified domain name (FQDN). <br />
+	Use the following format (port is optional): `http://hostname:port/ui/?p=<SpaceID>`. 
+Example:  `http://myServer.myCompany.com:8081/ui/?p=1002` <br />
+**Tip:** You can copy the URL from the address bar of the browser in which you opened ALM Octane.
+	3. Enter the API Access **Client ID** and **Client Secret** that the plugin should use to access ALM Octane. 
+	4. Set the **GoCD API Username** and **GoCD API Password**. 
+These are the credentials the plugin uses  to access the GoCD server. 
+	5. When you save your settings, the plugin tests the connections to ALM Octane and to the GoCD server. If the connections succeed, the settings are saved, otherwise you are notified of the problem. 
 
-## Features of this plugin
-This GoCD plugin exposes pipelines towards Octane.
- * Whenever a pipeline starts building, Octane will be informed. Octane will show in the *Pipelines Live Summary* that
-   the pipeline is building. It will also show the estimated build duration which was calculated by the plugin.
- * Whenever a pipeline finishes building, Octane will be informed. The plugin will provide the build duration, build
-   stability, test results and SCM changes to Octane. Octane will analyze the given information and show it in various
-   views.
- * From within Octane any pipeline can be triggered to run.
+4. In ALM Octane, add your GoCD server as a CI Server:  
+In ALM Octane click the Settings cogwheel and select **Spaces**. (DevOps permissions are required) 
+	1. Open the **DevOps** tab and select the CI Servers section. 
+	2. Click + to add a new CI Server. 
+	3. Select your GoCD server from the dropdown list, provide a name for the CI server and save. 
+	4. With the GoCD server is added to the list in the CI servers section. You can see its name, instance ID, server type, URL, connection status and SDK version. 
+ 
+ You can now add GoCD pipelines in ALM Octane. 
+ 
+ ###Connecting GoCD pipelines to ALM Octane 
+ This GoCD plugin provides ALM Octane with information about pipeline runs and enables triggering a pipeline run from ALM Octane. 
 
-### Test results
-In order to see test results of your pipelines in Octane. The plugin has to translate the test reports into Octane's
-data model. Therefor *xml-report-parsers* for *JUnit* and *NUnit* are integrated into this plugin. To allow the
-plugin to parse your xml-report-files, you have to declare them as artifacts of your build. Whenever a pipeline finishes
-the plugin will search all artifacts, and it will try to parse all xml files assuming they are the result-file of
-JUnit or NUnit. If successful the contained test results are transmitted to Octane.
+The plugin notifies ALM Octane when a pipeline run starts, sending also an estimated run duration.
 
-Supported test result formats are:
- * JUnit
- * NUnit 2.5
- * NUnit 3.0
+When a pipeline run ends, the plugin sends ALM Octane the build duration, build stability, test results and SCM changes. 
 
-### Triggering a pipeline to run
-In Octane the feature *Run Pipeline* might be deactivated. The reason is that ALM Octane only activates it for *known*
-CI Server types, to which *GoCD* does currently not belong to. As long as in ALM Octane in the overview `CI Servers`
-your GoCD server is displayed as type `unknown`, the feature *Run Pipeline* will not get active.
+In ALM Octane, you can trigger a pipeline run or track and analyse the pipeline run information provided by the plugin. 
+ 
+ ###Test run results 
+Make sure to declare your xml-report-files as artifacts or your build. 
 
-## Restrictions of this plugin
-This plugin allows your GoCD server to connect to exactly one Shared Space on exactly one ALM Octane instance. It is
-not possible to connect your GoCD server instance to multiple shared spaces or multiple ALM Octane instances.
+This enables the plugin to locate the test results, convert them to a format that the ALM Octane recognizes, and send the test results to ALM Octane.
 
-## Bugs and Feature Requests
-The transmission of test results to Octane, especially the mapping into Octane's domain model is arbitrary. Please file
-an issue if you feel something is wrong with it. Also, if your project uses other test tools than JUnit or NUnit, then
-please create a feature request and provide an example of your report file(s) allong with it. Technically every test tool
-can be used, as long as it generates some sort of report-file.
+The plugin supports only test results in the following formats: 
+* JUnit 
+* NUnit 2.5 
+* NUnit 3.0 

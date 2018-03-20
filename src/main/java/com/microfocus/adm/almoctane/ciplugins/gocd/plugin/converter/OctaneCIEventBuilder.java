@@ -91,20 +91,20 @@ public class OctaneCIEventBuilder {
 					sendPipelineStartEvent(statusInfo);
 					//send pipeline start event
 				}
-			//	sendStageStartEvent(statusInfo);
+				sendStageStartEvent(statusInfo);
 				break;
 
 			case Passed:
+				//send stage end event
+				sendStageEndEvent(statusInfo);
 				if(isLastStage(stageName,stages)){
 					sendPipelineEndEvent(statusInfo);
 					//send pipeline end event
-				} else {
-					//send stage end event
-					sendStageEndEvent(statusInfo);
 				}
 				break;
 			case Failed:
 			case Cancelled:
+				sendStageEndEvent(statusInfo);
 				sendPipelineEndEvent(statusInfo);
 				break;
 			default:
@@ -195,47 +195,6 @@ public class OctaneCIEventBuilder {
 		}
 	}
 
-//	private void sendStageTestResults(StatusInfoWrapper statusInfo, GoPipelineInstance pipelineInstance){
-//
-//			Log.debug("Retrieving test results for '" + jobId + "' and buildNumber '" + buildNumber + "'");
-//			final TestsResult result = DTOFactory.getInstance().newDTO(TestsResult.class)
-//				.setBuildContext(DTOFactory.getInstance().newDTO(BuildContext.class).setServerId(goServerID))
-//				.setTestRuns(new ArrayList<TestRun>());
-//
-//			/** Use the same client for all requests in this method. Notice that {@link GoGetAllArtifacts}
-//			 * needs an authentication cookie which is received by the client when performing an API request. */
-//			if (pipelineInstance != null && pipelineInstance.getStages() != null) {
-//				result.getBuildContext()
-//					.setJobId(statusInfo.getStageName())
-//					.setJobName(statusInfo.getStageName())
-//					.setBuildId(statusInfo.getPipelineCounter())
-//					.setBuildName(pipelineInstance.getLabel());
-//
-//				List<GoArtifact> artifacts = new GoGetAllArtifacts(goApiClient).get(statusInfo.getPipelineName(),
-//					statusInfo.getPipelineCounter(), statusInfo.getStageName(), Integer.valueOf(statusInfo.getPipelineCounter()), jobInstance.getName());
-//				result.getTestRuns().addAll(new OctaneTestResultsBuilder(goApiClient).convert(artifacts));
-//
-//
-////				for (GoStageInstance stageInstance : pipelineInstance.getStages()) {
-////					if (stageInstance.getJobs() != null) {
-////						for (GoJobInstance jobInstance : stageInstance.getJobs()) {
-////							List<GoArtifact> artifacts = new GoGetAllArtifacts(goApiClient).get(statusInfo.getPipelineName(),
-////								statusInfo.getPipelineCounter(), statusInfo.getStageName(), Integer.valueOf(stageInstance.getCounter()), jobInstance.getName());
-////							result.getTestRuns().addAll(new OctaneTestResultsBuilder(goApiClient).convert(artifacts));
-////						}
-////					}
-////				}
-//			}
-//
-//			if(result.getTestRuns() != null && !result.getTestRuns().isEmpty()){
-//				try {
-//					OctaneSDK.getInstance().getTestsService().pushTestsResult(result);
-//				} catch (IOException e) {
-//					e.printStackTrace();
-//				}
-//			}
-//	}
-
 	private void sendStageEndEvent(StatusInfoWrapper statusInfo) {
 
 		final String stageName = statusInfo.getStageName();
@@ -247,7 +206,8 @@ public class OctaneCIEventBuilder {
 			.setBuildCiId(pipelineCounter)
 			.setNumber(pipelineCounter)
 			.setCauses(getCauses(statusInfo))
-			.setResult(getResult(statusInfo.getStageStatus()));
+			.setResult(getResult(statusInfo.getStageStatus()))
+			.setDuration(Long.valueOf(1));
 
 		//setTime(event, statusInfo);
 
@@ -311,8 +271,8 @@ public class OctaneCIEventBuilder {
 		}
 
 		octaneInstance.getEventsService().publishEvent(event);
-		// tell octane to request the test results.
 		sendPipelineSCMEvent(statusInfo, pipelineInstance);
+		// tell octane to request the test results.
 		octaneInstance.getTestsService().enqueuePushTestsResult(pipelineName, pipelineCounter);
 	}
 
