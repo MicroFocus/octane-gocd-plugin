@@ -17,6 +17,11 @@ compileTestJava.options.encoding = 'UTF-8'
 
 sourceCompatibility = 1.7
 
+apply plugin: 'signing'
+
+
+
+
 dependencies {
 	compile 'cd.go.plugin:go-plugin-api:17.9.+'
 	compile('com.hpe.adm.octane.ciplugins:integrations-sdk:1.5.3')
@@ -34,4 +39,9 @@ jar {
 	}
 
 	baseName 'gocd-ci-plugin'
+}
+
+signing {
+    useGpgCmd()
+    sign configurations.archives
 }
