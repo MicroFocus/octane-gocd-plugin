@@ -13,7 +13,7 @@ This plugin requires GoCD version 17.9 or later.
 Before you install the plugin, obtain an API Access Client ID and Client secret from your ALM Octane’s shared space admin.<br /> 
 The plugin uses these for authentication when communicating with ALM.
  
- ### How to install 
+ ## How to install 
 Install this plugin on your GoCD server:
 
 1. Download the plugin’s **.jar** file and store it on your GoCd server in `<go-server-directory>/plugins/external/`.
@@ -39,7 +39,7 @@ In ALM Octane click the Settings cogwheel and select **Spaces**. (DevOps permiss
  
  You can now add GoCD pipelines in ALM Octane. 
  
- ### Connecting GoCD pipelines to ALM Octane 
+ ## Connecting GoCD pipelines to ALM Octane 
  This GoCD plugin provides ALM Octane with information about pipeline runs and enables triggering a pipeline run from ALM Octane. 
 
 The plugin notifies ALM Octane when a pipeline run starts, sending also an estimated run duration.
@@ -48,7 +48,7 @@ When a pipeline run ends, the plugin sends ALM Octane the build duration, build 
 
 In ALM Octane, you can trigger a pipeline run or track and analyse the pipeline run information provided by the plugin. 
  
- ### Test run results 
+ ## Test run results 
 Make sure to declare your xml-report-files as artifacts or your build. 
 
 This enables the plugin to locate the test results, convert them to a format that the ALM Octane recognizes, and send the test results to ALM Octane.
@@ -57,3 +57,15 @@ The plugin supports only test results in the following formats:
 * JUnit 
 * NUnit 2.5 
 * NUnit 3.0 
+
+
+## Contribute to the GOCD plugin
+* Contributions of code are always welcome!
+* Follow the standard GIT workflow: Fork, Code, Commit, Push and start a Pull request
+* Each pull request will be tested, pass static code analysis and code review results.
+* All efforts will be made to expedite this process.
+### Guidelines
+* Document your code – it enables others to continue the great work you did on the code and update it.
+
+Feel free to contact us on any question related to contributions - `octane.ci.plugins@gmail.com`
+
