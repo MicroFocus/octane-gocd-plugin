@@ -2,18 +2,18 @@
 
 [![Build status](https://ci.appveyor.com/api/projects/status/y2e0msiuq88o0ddt?svg=true)](https://ci.appveyor.com/project/m-seldin/octane-gocd-plugin-isjhc)
 
-#Micro Focus ALM Octane GoCD plugin 
+# Micro Focus ALM Octane GoCD plugin 
 This plugin integrates GoCD with ALM Octane, enabling ALM Octane to display GoCD pipelines, trigger pipeline runs, and track build and test run results, as well as committed changes. 
 
 Note: You can connect your GoCD server to only one Space in ALM Octane. The same GoCD server cannot connect to multiple spaces or ALM Octane instances.
 
- ##Requirements 
+ ## Requirements 
 This plugin requires GoCD version 17.9 or later.
 
 Before you install the plugin, obtain an API Access Client ID and Client secret from your ALM Octane’s shared space admin.<br /> 
 The plugin uses these for authentication when communicating with ALM.
  
- ###How to install 
+ ### How to install 
 Install this plugin on your GoCD server:
 
 1. Download the plugin’s **.jar** file and store it on your GoCd server in `<go-server-directory>/plugins/external/`.
@@ -39,7 +39,7 @@ In ALM Octane click the Settings cogwheel and select **Spaces**. (DevOps permiss
  
  You can now add GoCD pipelines in ALM Octane. 
  
- ###Connecting GoCD pipelines to ALM Octane 
+ ### Connecting GoCD pipelines to ALM Octane 
  This GoCD plugin provides ALM Octane with information about pipeline runs and enables triggering a pipeline run from ALM Octane. 
 
 The plugin notifies ALM Octane when a pipeline run starts, sending also an estimated run duration.
@@ -48,7 +48,7 @@ When a pipeline run ends, the plugin sends ALM Octane the build duration, build 
 
 In ALM Octane, you can trigger a pipeline run or track and analyse the pipeline run information provided by the plugin. 
  
- ###Test run results 
+ ### Test run results 
 Make sure to declare your xml-report-files as artifacts or your build. 
 
 This enables the plugin to locate the test results, convert them to a format that the ALM Octane recognizes, and send the test results to ALM Octane.
