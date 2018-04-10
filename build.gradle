@@ -9,6 +9,8 @@ apply plugin: 'java'
 apply plugin: 'idea'
 apply plugin: 'eclipse'
 apply plugin: 'signing'
+apply plugin: 'maven'
+
 
 
 //Uploading archives
@@ -60,6 +62,6 @@ jar {
 }
 
 signing {
-    sign configurations.archives
+     sign configurations.archives	
 }
 
