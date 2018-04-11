@@ -23,9 +23,10 @@ configurations {
 uploadArchives {
     repositories.mavenDeployer {
         configuration = configurations.deployerJars
-        repository(url: "http://mydtbld0051.hpeswlab.net:8081/nexus/content/repositories/mqm-latest-dev") {
-            authentication(userName: "deployment", password: "deployment123")
+        repository(url: nexusUrl) {
+            authentication(userName: nexusUserName, password: nexusPassword)
         }
+
     }
 }
 
