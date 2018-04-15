@@ -10,17 +10,36 @@ apply plugin: 'idea'
 apply plugin: 'eclipse'
 apply plugin: 'signing'
 apply plugin: 'maven'
+apply plugin: 'maven-publish'
 
+publishing {
+	publications {
+		mavenJava(MavenPublication) {
+			from components.java
+		}
+	}
+
+	repositories {
+		maven {
+			url nexusUrl
+
+			credentials {
+				username = nexusUserName
+				password = nexusPassword
+			}
+		}
+    }
+ }
 
 
 //Uploading archives
 
-configurations {
+/*configurations {
     deployerJars
-}
+}*/
 
 
-uploadArchives {
+/*uploadArchives {
     repositories.mavenDeployer {
         configuration = configurations.deployerJars
         repository(url: nexusUrl) {
@@ -28,7 +47,7 @@ uploadArchives {
         }
 
     }
-}
+}*/
 
 
 //Downloading archives
