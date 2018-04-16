@@ -10,9 +10,9 @@ apply plugin: 'idea'
 apply plugin: 'eclipse'
 apply plugin: 'signing'
 apply plugin: 'maven'
-apply plugin: 'maven-publish'
+//apply plugin: 'maven-publish'
 
-publishing {
+/*publishing {
 	publications {
 		mavenJava(MavenPublication) {
 			from components.java
@@ -29,17 +29,17 @@ publishing {
 			}
 		}
     }
- }
+ }*/
 
 
 //Uploading archives
 
-/*configurations {
+configurations {
     deployerJars
-}*/
+}
 
 
-/*uploadArchives {
+uploadArchives {
     repositories.mavenDeployer {
         configuration = configurations.deployerJars
         repository(url: nexusUrl) {
@@ -47,7 +47,7 @@ publishing {
         }
 
     }
-}*/
+}
 
 
 //Downloading archives
