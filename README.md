@@ -68,3 +68,4 @@ The plugin supports only test results in the following formats:
 * Document your code – it enables others to continue the great work you did on the code and update it.
 
 Feel free to contact us on any question related to contributions - `octane.ci.plugins@gmail.com`
+
