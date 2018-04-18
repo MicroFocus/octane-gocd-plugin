@@ -2,7 +2,7 @@ description = 'GoCD Plugin for connecting with MicroFocus ALM Octane'
 
 group = "com.hpe.adm.octane.ciplugins"
 
-version = "1.0-SNAPSHOT"
+version = "1.5"
 
 apply plugin: 'base' // provides cleaning task
 apply plugin: 'java'
@@ -10,78 +10,134 @@ apply plugin: 'idea'
 apply plugin: 'eclipse'
 apply plugin: 'signing'
 apply plugin: 'maven'
-//apply plugin: 'maven-publish'
-
-/*publishing {
-	publications {
-		mavenJava(MavenPublication) {
-			from components.java
-		}
-	}
-
-	repositories {
-		maven {
-			url nexusUrl
-
-			credentials {
-				username = nexusUserName
-				password = nexusPassword
-			}
-		}
-    }
- }*/
+apply plugin: 'com.bmuschko.nexus'
+apply plugin: "io.codearte.nexus-staging"
+//apply plugin: 'info.solidsoft'
+apply plugin: 'maven-publish'
 
 
 //Uploading archives
 
 configurations {
-    deployerJars
+    //deployerJars
+        archives
 }
 
 
-uploadArchives {
-    repositories.mavenDeployer {
-        configuration = configurations.deployerJars
-        repository(url: nexusUrl) {
-            authentication(userName: nexusUserName, password: nexusPassword)
+/*publishing {
+        publications {
+                mavenJava(MavenPublication) {
+                        from components.java
+                }
+                mavenCustom(MavenPublication) {
+                        pom.withXml {
+                        asNode().appendNode('description',
+                                'Octane-GOCD Plugin')
+                        }
+                }
+
         }
 
+        repositories {
+                maven {
+//                      url nexusUrl
+
+                        credentials {
+                                username = nexusUsername
+                                password = nexusPassword
+                        }
+                                password = nexusPassword
+                        }
+                }
+    }
+ }*/
+
+/*task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}*/
+
+/*artifacts {
+    archives
+}*/
+
+/*uploadArchives {
+  repositories {
+    mavenDeployer {
+
+      repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+        authentication(userName: nexusUsername, password: nexusPassword)
+      }
+
+      snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+        authentication(userName: nexusUsername, password: nexusPassword)
+      }
+
+        }
+  }
+}*/
+nexus {
+     sign = true
+     repositoryUrl = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
+     snapshotRepositoryUrl = 'https://oss.sonatype.org/content/repositories/snapshots/'
+ }
+
+ buildscript {
+     repositories {
+jcenter {
+            url "http://jcenter.bintray.com/"
+        }
+
+//         jcenter()
+
+    maven {
+      url "https://plugins.gradle.org/m2/"
+
+    }
     }
 }
+  dependencies {
+        classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
+        classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.11.0"
+     }
+ }
+/*buildscript {
+  repositories {
+        jcenter {
+            url "http://jcenter.bintray.com/"
+        }
+    maven {
+      url "https://plugins.gradle.org/m2/"
+
+    }
+  }//repositories
+  dependencies {
+    classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.11.0"
+  }
+}*/
+/*allprojects {
+    repositories {
+        //jcenter()
+        jcenter {
+            url "http://jcenter.bintray.com/"
+        }
+    }
+}*/
+
+extraArchive {
+     sources = true
+     tests = false
+     javadoc = false
+ }
 
 
 //Downloading archives
 repositories {
-	mavenLocal()
-	mavenCentral()
-}
+        mavenLocal()
+        mavenCentral()
+ maven  {
+        url "http://repo1.maven.org/maven2"
+    }
 
-compileJava.options.encoding = 'UTF-8'
-compileTestJava.options.encoding = 'UTF-8'
-
-sourceCompatibility = 1.7
-
-
-dependencies {
-	compile 'cd.go.plugin:go-plugin-api:17.9.+'
-	compile('com.hpe.adm.octane.ciplugins:integrations-sdk:1.5.3')
-	compile 'com.google.code.gson:gson:2.8.+'
-	compile 'org.apache.httpcomponents:httpclient:4.5.2' // this httpclient is also contained in the SDK, but some classes of it are missing, so we need to have the original file.
-
-	runtime 'commons-logging:commons-logging:1.2' // necessary for the httpclient
-
-	testCompile 'junit:junit:4.12'
-}
-
-jar {
-	into('lib') { // as specified by GoCD all necessary libraries should be bundled in lib.
-		from configurations.runtime
-	}
-
-	baseName 'gocd-ci-plugin'
-}
-
-signing {
-     sign configurations.archives	
 }
 
