@@ -35,7 +35,7 @@ import java.util.List;
 /**
  * This class encapsulates the request to get all artifacts of a job from Go.
  * This API service is available since Go Version 14.3.0
- * @see <a href="https://api.gocd.org/current/#get-all-artifacts">Get All Artifacts</a>
+ * @see <a href="https://api.gocd.org/current/#get-all-artifacts"> Get All Artifacts</a>
  *
  * Please notice that this request is no API request (it doesn't begin with "/go/api/").
  * This means Basic-Authentication does not work. The {@link #goApiClient} has to be set

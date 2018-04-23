@@ -1,16 +1,60 @@
 description = 'GoCD Plugin for connecting with MicroFocus ALM Octane'
-
-version = "1.0-SNAPSHOT"
+version = '1.0-SNAPSHOT'
+group = 'com.hpe.adm.octane.ciplugins'
 
 apply plugin: 'base' // provides cleaning task
 apply plugin: 'java'
 apply plugin: 'idea'
 apply plugin: 'eclipse'
 
+apply plugin: 'maven'
+apply plugin: 'maven-publish'
+apply plugin: 'com.bmuschko.nexus'
+apply plugin: 'io.codearte.nexus-staging'
+
+//Uploading archives
+
+configurations {
+	archives
+}
+
+nexus {
+	sign = true
+	repositoryUrl = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
+	snapshotRepositoryUrl = 'https://oss.sonatype.org/content/repositories/snapshots/'
+}
+
+buildscript {
+	repositories {
+		jcenter {
+			url "http://jcenter.bintray.com/"
+		}
+		maven {
+			url "https://plugins.gradle.org/m2/"
+
+		}
+	}
+
+	dependencies {
+		classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
+		classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.11.0"
+	}
+}
+
+extraArchive {
+	sources = false
+	tests = false
+	javadoc = true
+}
+
 repositories {
 	mavenLocal()
 	mavenCentral()
+	maven  {
+		url "http://repo1.maven.org/maven2"
+	}
 }
+
 
 compileJava.options.encoding = 'UTF-8'
 compileTestJava.options.encoding = 'UTF-8'
@@ -18,9 +62,10 @@ compileTestJava.options.encoding = 'UTF-8'
 sourceCompatibility = 1.7
 
 dependencies {
-	compile 'cd.go.plugin:go-plugin-api:17.9.+'
+
+	compile 'cd.go.plugin:go-plugin-api:17.9.0'
 	compile('com.hpe.adm.octane.ciplugins:integrations-sdk:1.5.3')
-	compile 'com.google.code.gson:gson:2.8.+'
+	compile 'com.google.code.gson:gson:2.8.2'
 	compile 'org.apache.httpcomponents:httpclient:4.5.2' // this httpclient is also contained in the SDK, but some classes of it are missing, so we need to have the original file.
 
 	runtime 'commons-logging:commons-logging:1.2' // necessary for the httpclient
@@ -35,3 +80,5 @@ jar {
 
 	baseName 'gocd-ci-plugin'
 }
+
+

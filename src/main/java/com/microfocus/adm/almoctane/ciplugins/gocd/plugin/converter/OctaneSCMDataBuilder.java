@@ -21,13 +21,11 @@
 package com.microfocus.adm.almoctane.ciplugins.gocd.plugin.converter;
 
 import com.hp.octane.integrations.dto.DTOFactory;
-import com.hp.octane.integrations.dto.scm.SCMCommit;
-import com.hp.octane.integrations.dto.scm.SCMData;
-import com.hp.octane.integrations.dto.scm.SCMRepository;
-import com.hp.octane.integrations.dto.scm.SCMType;
+import com.hp.octane.integrations.dto.scm.*;
 import com.microfocus.adm.almoctane.ciplugins.gocd.dto.*;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This builder helps retrieving the {@link SCMData} from a {@link GoPipelineInstance}.
@@ -47,12 +45,19 @@ public class OctaneSCMDataBuilder {
 					if (materialRevision.getModifications() != null) {
 						scmData.setCommits(new ArrayList<SCMCommit>());
 						for (GoModification modification : materialRevision.getModifications()) {
+							List<SCMChange> changes = new ArrayList<>();
+							SCMChange change = DTOFactory.getInstance().newDTO(SCMChange.class);
+							change.setFile("test1.java");
+							change.setType("edit");
+							changes.add(change);
+
 							scmData.getCommits().add(DTOFactory.getInstance().newDTO(SCMCommit.class)
 								.setUser(modification.getUserName())
 								.setUserEmail(modification.getEmailAddress())
 								.setComment(modification.getComment())
 								.setRevId(modification.getRevision())
-								.setTime(modification.getModifiedTime()));
+								.setTime(modification.getModifiedTime())
+								.setChanges(changes));
 						}
 					}
 				}
