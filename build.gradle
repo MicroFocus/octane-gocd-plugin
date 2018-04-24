@@ -1,143 +1,212 @@
 description = 'GoCD Plugin for connecting with MicroFocus ALM Octane'
 
-group = "com.hpe.adm.octane.ciplugins"
-
-version = "1.5"
+version = "1.7"
+group = 'com.hpe.adm.octane.ciplugins'
 
 apply plugin: 'base' // provides cleaning task
 apply plugin: 'java'
 apply plugin: 'idea'
 apply plugin: 'eclipse'
-apply plugin: 'signing'
-apply plugin: 'maven'
-apply plugin: 'com.bmuschko.nexus'
-apply plugin: "io.codearte.nexus-staging"
-//apply plugin: 'info.solidsoft'
 apply plugin: 'maven-publish'
-
+apply plugin: 'signing'
+apply plugin: "io.codearte.nexus-staging"
+//apply plugin: "io.codearte.gradle.nexus"
 
 //Uploading archives
 
-configurations {
-    //deployerJars
-        archives
-}
+publishing {
+    repositories {
+        maven {
 
-
-/*publishing {
-        publications {
-                mavenJava(MavenPublication) {
-                        from components.java
+	credentials {
+            username ossrhUsername
+            password ossrhPassword
+        	}
+       url "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+      	}//maven
+   }//repositories
+     
+   publications {
+        mavenJava(MavenPublication) {
+            from components.java
+	    customizePom(pom)
+	    artifact packageSources 
+	    artifact packageJavadoc 	    
+	
+	// create the sign pom artifact
+            pom.withXml {
+                def pomFile = file("${project.buildDir}/generated-pom.xml")
+                writeTo(pomFile)
+                def pomAscFile = signing.sign(pomFile).signatureFiles[0]
+                artifact(pomAscFile) {
+                    classifier = null
+                    extension = 'pom.asc'
                 }
-                mavenCustom(MavenPublication) {
-                        pom.withXml {
-                        asNode().appendNode('description',
-                                'Octane-GOCD Plugin')
-                        }
-                }
+            }
+		
 
+        	
+        signArchives.signatures.each { signature ->
+                artifact(signature) {
+                    extension signature.type
+                }
+            }
+
+            pom {
+                packaging 'jar'
+            }
+
+	}//mavenJava
+    }//publication
+}//publishing
+
+def customizePom(pom) {
+    pom.withXml {
+        def root = asNode()
+
+        // eliminate test-scoped dependencies (no need in maven central POMs)
+        root.dependencies.removeAll { dep ->
+            dep.scope == "test"
         }
 
-        repositories {
-                maven {
-//                      url nexusUrl
+        // add all items necessary for maven central publication
+        root.children().last() + {
+            resolveStrategy = Closure.DELEGATE_FIRST
 
-                        credentials {
-                                username = nexusUsername
-                                password = nexusPassword
-                        }
-                                password = nexusPassword
-                        }
+            description 'Octane CI plugin for GOCD'
+            name 'gocd-ci-plugin'
+            url 'https://github.com/mautini/schemaorg-java'
+            /*organization {
+                name 'com.microfocus'
+                url 'https://github.com/mautini'
+            }
+            issueManagement {
+                system 'GitHub'
+                url 'https://github.com/mautini/schemaorg-java/issues'
+            }*/
+            licenses {
+                license {
+                    name 'Apache License 2.0'
+                    url 'https://github.com/mautini/schemaorg-java/blob/master/LICENSE'
+                    distribution 'repo'
                 }
+            }
+            scm {
+                url 'https://github.com/MicroFocus/octane-gocd-plugin'
+                connection 'scm:git:git://git@github.com:MicroFocus/octane-gocd-plugin.git'
+                developerConnection 'scm:git:ssh://git@github.com:MicroFocus/octane-gocd-plugin.git'
+            }
+            developers {
+                developer {
+                    name 'Mautini'
+                }
+            }
+        }
     }
- }*/
+}
 
-/*task sourcesJar(type: Jar) {
-    classifier = 'sources'
+model {
+    tasks.generatePomFileForMavenJavaPublication {
+        destination = file("$buildDir/generated-pom.xml")
+    }
+    tasks.publishMavenJavaPublicationToMavenLocal {
+        dependsOn project.tasks.signArchives
+    }
+    tasks.publishMavenJavaPublicationToMavenRepository {
+        dependsOn project.tasks.signArchives
+    }
+}
+task packageJavadoc(type: Jar, dependsOn: 'javadoc') {
+    from javadoc.destinationDir
+    classifier = 'javadoc'
+}
+task packageSources(type: Jar, dependsOn: 'classes') {
     from sourceSets.main.allSource
-}*/
-
-/*artifacts {
-    archives
-}*/
-
-/*uploadArchives {
-  repositories {
-    mavenDeployer {
-
-      repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-        authentication(userName: nexusUsername, password: nexusPassword)
-      }
-
-      snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-        authentication(userName: nexusUsername, password: nexusPassword)
-      }
-
-        }
-  }
-}*/
-nexus {
-     sign = true
-     repositoryUrl = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
-     snapshotRepositoryUrl = 'https://oss.sonatype.org/content/repositories/snapshots/'
- }
-
- buildscript {
-     repositories {
-jcenter {
-            url "http://jcenter.bintray.com/"
-        }
-
-//         jcenter()
-
-    maven {
-      url "https://plugins.gradle.org/m2/"
-
-    }
-    }
+    classifier = 'sources'
 }
-  dependencies {
-        classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
-        classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.11.0"
-     }
- }
-/*buildscript {
-  repositories {
-        jcenter {
-            url "http://jcenter.bintray.com/"
-        }
-    maven {
-      url "https://plugins.gradle.org/m2/"
+artifacts {
+    archives packageJavadoc
+    archives packageSources
+}
 
+
+repositories {
+        mavenLocal()
+        mavenCentral()
+        maven  {
+	url "http://central.maven.org/maven2/"
+        }
+}
+
+compileJava.options.encoding = 'UTF-8'
+compileTestJava.options.encoding = 'UTF-8'
+
+sourceCompatibility = 1.7
+
+dependencies {
+
+        compile 'cd.go.plugin:go-plugin-api:17.9.0'
+        compile('com.hpe.adm.octane.ciplugins:integrations-sdk:1.5.3')
+        compile 'com.google.code.gson:gson:2.8.2'
+        compile 'org.apache.httpcomponents:httpclient:4.5.2' // this httpclient is also contained in the SDK, but some classes of it are missing, so we need to have the original file.
+
+        runtime 'commons-logging:commons-logging:1.2' // necessary for the httpclient
+
+        testCompile 'junit:junit:4.12'
+}
+
+
+jar {
+        into('lib') { // as specified by GoCD all necessary libraries should be bundled in lib.
+                from configurations.runtime
+        }
+
+        baseName 'gocd-ci-plugin'
+}
+
+
+
+buildscript {
+  repositories {
+	jcenter()
+	mavenCentral()
+    maven {
+      url "http://central.maven.org/maven2/"
     }
-  }//repositories
+  }
   dependencies {
     classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.11.0"
   }
-}*/
-/*allprojects {
+}
+
+allprojects {
     repositories {
         //jcenter()
         jcenter {
             url "http://jcenter.bintray.com/"
         }
+	maven {
+	url "https://plugins.gradle.org/m2/"
+	}
     }
-}*/
-
-extraArchive {
-     sources = true
-     tests = false
-     javadoc = false
- }
-
-
-//Downloading archives
-repositories {
-        mavenLocal()
-        mavenCentral()
- maven  {
-        url "http://repo1.maven.org/maven2"
-    }
-
 }
 
+
+
+
+
+tasks.withType(GenerateMavenPom) {
+    signArchives.dependsOn it
+    signArchives.sign it.outputs.files.singleFile
+}
+
+signing {
+	required {
+        // signing is required if this is a release version and the artifacts are to be published
+        !version.toString().endsWith('-SNAPSHOT') && tasks.withType(PublishToMavenRepository).find {
+             gradle.taskGraph.hasTask it
+        }
+    }
+    sign configurations.archives
+    //sign publishing.publications
+}
