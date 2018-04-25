@@ -1,6 +1,6 @@
 description = 'GoCD Plugin for connecting with MicroFocus ALM Octane'
 
-version = "1.7"
+version = "1.9"
 group = 'com.hpe.adm.octane.ciplugins'
 
 apply plugin: 'base' // provides cleaning task
@@ -9,7 +9,7 @@ apply plugin: 'idea'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 apply plugin: 'signing'
-apply plugin: "io.codearte.nexus-staging"
+//apply plugin: "io.codearte.nexus-staging"
 //apply plugin: "io.codearte.gradle.nexus"
 
 //Uploading archives
@@ -105,7 +105,7 @@ def customizePom(pom) {
     }
 }
 
-model {
+/*model {
     tasks.generatePomFileForMavenJavaPublication {
         destination = file("$buildDir/generated-pom.xml")
     }
@@ -115,7 +115,7 @@ model {
     tasks.publishMavenJavaPublicationToMavenRepository {
         dependsOn project.tasks.signArchives
     }
-}
+}*/
 task packageJavadoc(type: Jar, dependsOn: 'javadoc') {
     from javadoc.destinationDir
     classifier = 'javadoc'
@@ -166,7 +166,7 @@ jar {
 
 
 
-buildscript {
+/*buildscript {
   repositories {
 	jcenter()
 	mavenCentral()
@@ -190,7 +190,7 @@ allprojects {
 	}
     }
 }
-
+*/
 
 
 
@@ -210,3 +210,4 @@ signing {
     sign configurations.archives
     //sign publishing.publications
 }
+
