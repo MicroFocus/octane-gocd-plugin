@@ -11,59 +11,60 @@ apply plugin: 'maven-publish'
 apply plugin: 'signing'
 apply plugin: "io.codearte.nexus-staging"
 
-//Uploading archives
-publishing {
-    repositories {
-        maven {
+//Uploading archives to nexus
+def shouldPublish = System.getProperty('ci.publish', '')
 
-	credentials {
-            username nexusUsername
-            password nexusPassword
-        	}
-	if(project.version.endsWith('-SNAPSHOT')) {
-                url "https://oss.sonatype.org/content/repositories/snapshots"
-        }
-        else{
-                url "https://oss.sonatype.org/service/local/staging/deploy/maven2"
-        }
-      	}//maven
-   }//repositories
-     
-   publications {
-        mavenJava(MavenPublication) {
-            from components.java
-	    artifact packageSources 
-	    artifact packageJavadoc 	    
-	
-	if(!project.version.endsWith('-SNAPSHOT')) {
+if (shouldPublish != '') {
+	publishing {
+		repositories {
+			maven {
 
-	    customizePom(pom)	
-	// create the sign pom artifact
-            pom.withXml {
-                def pomFile = file("${project.buildDir}/generated-pom.xml")
-                writeTo(pomFile)
-                def pomAscFile = signing.sign(pomFile).signatureFiles[0]
-                artifact(pomAscFile) {
-                    classifier = null
-                    extension = 'pom.asc'
-                }
-            }
-		
+				credentials {
+					username nexusUsername
+					password nexusPassword
+				}
+				if (project.version.endsWith('-SNAPSHOT')) {
+					url "https://oss.sonatype.org/content/repositories/snapshots"
+				} else {
+					url "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+				}
+			}//maven
+		}//repositories
 
-        	
-        signArchives.signatures.each { signature ->
-                artifact(signature) {
-                    extension signature.type
-                }
-            }
+		publications {
+			mavenJava(MavenPublication) {
+				from components.java
+				artifact packageSources
+				artifact packageJavadoc
 
-            pom {
-                packaging 'jar'
-            }
-	  }
-	}//mavenJava
-    }//publication
-}//publishing
+				if (!project.version.endsWith('-SNAPSHOT')) {
+
+					customizePom(pom)
+					// create the sign pom artifact
+					pom.withXml {
+						def pomFile = file("${project.buildDir}/generated-pom.xml")
+						writeTo(pomFile)
+						def pomAscFile = signing.sign(pomFile).signatureFiles[0]
+						artifact(pomAscFile) {
+							classifier = null
+							extension = 'pom.asc'
+						}
+					}
+
+					signArchives.signatures.each { signature ->
+						artifact(signature) {
+							extension signature.type
+						}
+					}
+
+					pom {
+						packaging 'jar'
+					}
+				}
+			}//mavenJava
+		}//publication
+	}//publishing
+}
 
 def customizePom(pom) {
     pom.withXml {
@@ -80,19 +81,19 @@ def customizePom(pom) {
 
             description 'Octane CI plugin for GOCD'
             name 'gocd-ci-plugin'
-            url 'https://github.com/mautini/schemaorg-java'
-            /*organization {
+            url 'https://github.com/MicroFocus/octane-gocd-plugin'
+            organization {
                 name 'com.microfocus'
-                url 'https://github.com/mautini'
-            }
+                url 'https://www.microfocus.com/'
+            }/*
             issueManagement {
                 system 'GitHub'
                 url 'https://github.com/mautini/schemaorg-java/issues'
             }*/
             licenses {
                 license {
-                    name 'Apache License 2.0'
-                    url 'https://github.com/mautini/schemaorg-java/blob/master/LICENSE'
+                    name 'Apache License, Version 2.0'
+                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
                     distribution 'repo'
                 }
             }
@@ -103,7 +104,9 @@ def customizePom(pom) {
             }
             developers {
                 developer {
-                    name 'Mautini'
+					name 'Ayellet Lazar'
+					organization 'MicroFocus'
+					email 'ayellet.lazar@microfocus.com'
                 }
             }
         }
@@ -152,7 +155,7 @@ dependencies {
 
 
 jar {
-        into('lib') { 
+        into('lib') {
 		// as specified by GoCD all necessary libraries should be bundled in lib.
                 from configurations.runtime
         }
@@ -165,7 +168,7 @@ jar {
 buildscript {
   repositories {
 	jcenter {
-            url "http://jcenter.bintray.com/"  
+            url "http://jcenter.bintray.com/"
         }
 	jcenter()
 	mavenCentral()
@@ -190,10 +193,6 @@ allprojects {
     }
 }
 
-
-
-
-
 tasks.withType(GenerateMavenPom) {
     signArchives.dependsOn it
     signArchives.sign it.outputs.files.singleFile
@@ -207,7 +206,7 @@ signing {
         }
     }
     sign configurations.archives
-    
+
 }
 
 
