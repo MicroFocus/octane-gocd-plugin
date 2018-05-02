@@ -1,7 +1,7 @@
 description = 'GoCD Plugin for connecting with MicroFocus ALM Octane'
 
 version = "1.0-SNAPSHOT"
-group = 'com.microfocus.adm.octane.ciplugins'
+group = 'com.microfocus.adm.almoctane.ciplugins'
 
 apply plugin: 'base' // provides cleaning task
 apply plugin: 'java'
