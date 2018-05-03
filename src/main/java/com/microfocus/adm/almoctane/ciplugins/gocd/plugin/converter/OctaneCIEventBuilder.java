@@ -72,7 +72,7 @@ public class OctaneCIEventBuilder {
 	}
 
 	/**
-	 * This method will analyze the given {@param statusInfo} and may or may not generate
+	 * This method will analyze the given 'statusInfo' and may or may not generate
 	 * and send a {@link CIEvent} to Octane.
 	 */
 	public void sendCIEvent(StatusInfoWrapper statusInfo) {
@@ -180,6 +180,8 @@ public class OctaneCIEventBuilder {
 
 			SCMData scmData = new OctaneSCMDataBuilder().retrieveFrom(pipelineInstance);
 			if(scmData != null && scmData.getCommits()!=null) {
+				scmData.setBuiltRevId(statusInfo.getPipelineCounter());
+
 				CIEvent scmEvent = DTOFactory.getInstance().newDTO(CIEvent.class)
 					.setEventType(CIEventType.SCM)
 					.setProject(statusInfo.getPipelineName())
@@ -269,7 +271,7 @@ public class OctaneCIEventBuilder {
 				event.setDuration(lastTransitionTime.getTime() - firstScheduledDate); // in ms
 			}
 		}
-
+	//	event.setScmData(new OctaneSCMDataBuilder().retrieveFrom(pipelineInstance));
 		octaneInstance.getEventsService().publishEvent(event);
 		sendPipelineSCMEvent(statusInfo, pipelineInstance);
 		// tell octane to request the test results.

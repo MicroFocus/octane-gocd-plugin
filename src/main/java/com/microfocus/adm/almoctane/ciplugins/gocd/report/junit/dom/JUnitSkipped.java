@@ -19,6 +19,6 @@
 package com.microfocus.adm.almoctane.ciplugins.gocd.report.junit.dom;
 
 /**
- * The empty element <skipped/> is used to mark testCases being skipped.
+ * The empty element 'skipped' is used to mark testCases being skipped.
  */
 public class JUnitSkipped {}

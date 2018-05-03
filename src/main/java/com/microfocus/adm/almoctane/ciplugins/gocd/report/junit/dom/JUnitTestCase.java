@@ -94,6 +94,8 @@ public class JUnitTestCase {
 	 *     }
 	 * </code>
 	 * is set.
+	 *
+	 * @return systemOut
 	 */
 	public String getSystemOut() {
 		return systemOut;
@@ -111,6 +113,8 @@ public class JUnitTestCase {
 	 *     }
 	 * </code>
 	 * is set.
+	 *
+	 * @return systemError
 	 */
 	public String getSystemError() {
 		return systemError;

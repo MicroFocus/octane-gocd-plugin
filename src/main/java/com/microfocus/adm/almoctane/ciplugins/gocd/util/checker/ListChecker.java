@@ -30,6 +30,7 @@ public class ListChecker<Instance> implements Checker<Collection<Instance>> {
 
 	/**
 	 * Use this constructor to use a checker of your choice to check all items.
+	 * @param checker
 	 */
 	public ListChecker(Checker<Instance> checker) {
 		this.checker = checker;
@@ -55,6 +56,10 @@ public class ListChecker<Instance> implements Checker<Collection<Instance>> {
 
 	/**
 	 * This is a convenience method to allow a more compact code when using this class.
+	 * @param items
+	 * @param checker
+	 * @param <Instance>
+	 * @return
 	 */
 	public static <Instance> boolean check(Collection<Instance> items, Checker<Instance> checker) {
 		return new ListChecker<>(checker).check(items);

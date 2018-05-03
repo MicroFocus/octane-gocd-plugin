@@ -45,8 +45,10 @@ public class OctaneTestResultsBuilder {
 	}
 
 	/**
-	 * This method will analyze the given {@param statusInfo} and may or may not generate
+	 * This method will analyze the given 'statusInfo' and may or may not generate
 	 * and send a {@link CIEvent} to Octane.
+	 * @param artifacts
+	 * @return TestRun's list
 	 */
 	public List<TestRun> convert(List<GoArtifact> artifacts) {
 		final List<TestRun> testResults = new ArrayList<>();

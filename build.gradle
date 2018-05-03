@@ -1,37 +1,209 @@
 description = 'GoCD Plugin for connecting with MicroFocus ALM Octane'
 
 version = "1.0-SNAPSHOT"
+group = 'com.microfocus.adm.almoctane.ciplugins'
 
 apply plugin: 'base' // provides cleaning task
 apply plugin: 'java'
 apply plugin: 'idea'
 apply plugin: 'eclipse'
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
+apply plugin: "io.codearte.nexus-staging"
+
+//Uploading archives to nexus
+publishing {
+	repositories {
+		maven {
+
+			credentials {
+				username nexusUsername
+				password nexusPassword
+			}
+			if (project.version.endsWith('-SNAPSHOT')) {
+				url "https://oss.sonatype.org/content/repositories/snapshots"
+			} else {
+				url "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+			}
+		}//maven
+	}//repositories
+
+	publications {
+		mavenJava(MavenPublication) {
+			from components.java
+			artifact packageSources
+			artifact packageJavadoc
+
+			if (!project.version.endsWith('-SNAPSHOT')) {
+
+				customizePom(pom)
+				// create the sign pom artifact
+				pom.withXml {
+					def pomFile = file("${project.buildDir}/generated-pom.xml")
+					writeTo(pomFile)
+					def pomAscFile = signing.sign(pomFile).signatureFiles[0]
+					artifact(pomAscFile) {
+						classifier = null
+						extension = 'pom.asc'
+					}
+				}
+
+				signArchives.signatures.each { signature ->
+					artifact(signature) {
+						extension signature.type
+					}
+				}
+
+				pom {
+					packaging 'jar'
+				}
+			}
+		}//mavenJava
+	}//publication
+}//publishing
+
+
+def customizePom(pom) {
+    pom.withXml {
+        def root = asNode()
+
+        // eliminate test-scoped dependencies (no need in maven central POMs)
+        root.dependencies.removeAll { dep ->
+            dep.scope == "test"
+        }
+
+        // add all items necessary for maven central publication
+        root.children().last() + {
+            resolveStrategy = Closure.DELEGATE_FIRST
+
+            description 'Octane CI plugin for GOCD'
+            name 'gocd-ci-plugin'
+            url 'https://github.com/MicroFocus/octane-gocd-plugin'
+            organization {
+                name 'com.microfocus'
+                url 'https://www.microfocus.com/'
+            }/*
+            issueManagement {
+                system 'GitHub'
+                url 'https://github.com/mautini/schemaorg-java/issues'
+            }*/
+            licenses {
+                license {
+                    name 'Apache License, Version 2.0'
+                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    distribution 'repo'
+                }
+            }
+            scm {
+                url 'https://github.com/MicroFocus/octane-gocd-plugin'
+                connection 'scm:git:git://git@github.com:MicroFocus/octane-gocd-plugin.git'
+                developerConnection 'scm:git:ssh://git@github.com:MicroFocus/octane-gocd-plugin.git'
+            }
+            developers {
+                developer {
+					name 'Ayellet Lazar'
+					organization 'MicroFocus'
+					email 'ayellet.lazar@microfocus.com'
+                }
+            }
+        }
+    }
+}
+
+
+task packageJavadoc(type: Jar, dependsOn: 'javadoc') {
+    from javadoc.destinationDir
+    classifier = 'javadoc'
+}
+task packageSources(type: Jar, dependsOn: 'classes') {
+    from sourceSets.main.allSource
+    classifier = 'sources'
+}
+artifacts {
+    archives packageJavadoc
+    archives packageSources
+}
+
 
 repositories {
-	mavenLocal()
-	mavenCentral()
+        mavenLocal()
+        mavenCentral()
+        maven  {
+	url "http://central.maven.org/maven2/"
+        }
 }
 
 compileJava.options.encoding = 'UTF-8'
 compileTestJava.options.encoding = 'UTF-8'
 
-sourceCompatibility = 1.7
+sourceCompatibility = 1.8
 
 dependencies {
-	compile 'cd.go.plugin:go-plugin-api:17.9.+'
-	compile('com.hpe.adm.octane.ciplugins:integrations-sdk:1.5.3')
-	compile 'com.google.code.gson:gson:2.8.+'
-	compile 'org.apache.httpcomponents:httpclient:4.5.2' // this httpclient is also contained in the SDK, but some classes of it are missing, so we need to have the original file.
 
-	runtime 'commons-logging:commons-logging:1.2' // necessary for the httpclient
+        compile 'cd.go.plugin:go-plugin-api:17.9.0'
+        compile('com.hpe.adm.octane.ciplugins:integrations-sdk:1.5.3')
+        compile 'com.google.code.gson:gson:2.8.2'
+        compile 'org.apache.httpcomponents:httpclient:4.5.2' // this httpclient is also contained in the SDK, but some classes of it are missing, so we need to have the original file.
 
-	testCompile 'junit:junit:4.12'
+        runtime 'commons-logging:commons-logging:1.2' // necessary for the httpclient
+
+        testCompile 'junit:junit:4.12'
 }
+
 
 jar {
-	into('lib') { // as specified by GoCD all necessary libraries should be bundled in lib.
-		from configurations.runtime
-	}
+        into('lib') {
+		// as specified by GoCD all necessary libraries should be bundled in lib.
+                from configurations.runtime
+        }
 
-	baseName 'gocd-ci-plugin'
+        baseName 'gocd-ci-plugin'
 }
+
+
+
+buildscript {
+  repositories {
+	jcenter {
+            url "http://jcenter.bintray.com/"
+        }
+	jcenter()
+	mavenCentral()
+    maven {
+      url "http://central.maven.org/maven2/"
+    }
+  }
+  dependencies {
+    classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.11.0"
+  }
+}
+
+allprojects {
+    repositories {
+        //jcenter()
+        jcenter {
+            url "http://jcenter.bintray.com/"
+        }
+	maven {
+	url "https://plugins.gradle.org/m2/"
+	}
+    }
+}
+
+tasks.withType(GenerateMavenPom) {
+    signArchives.dependsOn it
+    signArchives.sign it.outputs.files.singleFile
+}
+
+signing {
+	required {
+        // signing is required if this is a release version and the artifacts are to be published
+        !version.toString().endsWith('-SNAPSHOT') && tasks.withType(PublishToMavenRepository).find {
+             gradle.taskGraph.hasTask it
+        }
+    }
+    sign configurations.archives
+
+}
+
+

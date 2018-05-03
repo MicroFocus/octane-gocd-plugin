@@ -35,6 +35,7 @@ public class OctaneGoCDPluginSettingsWrapper {
 
 	/**
 	 * This method renders the given properties into a settings POJO.
+	 * @return OctaneGoCDPluginSettings
 	 */
 	public OctaneGoCDPluginSettings getPluginSettings() {
 		return new OctaneGoCDPluginSettings()
