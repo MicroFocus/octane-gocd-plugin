@@ -47,7 +47,7 @@ public class OctaneTestResultsBuilder {
 	/**
 	 * This method will analyze the given 'statusInfo' and may or may not generate
 	 * and send a {@link CIEvent} to Octane.
-	 * @param artifacts
+	 * @param artifacts the artifacts of GocD build
 	 * @return TestRun's list
 	 */
 	public List<TestRun> convert(List<GoArtifact> artifacts) {

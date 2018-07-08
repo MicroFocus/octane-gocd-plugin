@@ -279,6 +279,7 @@ public class GoPluginServices extends CIPluginServicesBase {
 	/**
 	 * Helper method to convert a single {@link GoPipelineInstance} into {@link SnapshotNode}.
 	 * @param instance to convert. Can be null.
+	 * @param allStagesSuccessful
 	 * @return the SnapshotNode or null, if null was given.
 	 */
 	protected SnapshotNode createSnapshotNode(final GoPipelineInstance instance, boolean allStagesSuccessful) {

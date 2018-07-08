@@ -64,6 +64,7 @@ The plugin supports only test results in the following formats:
 * Follow the standard GIT workflow: Fork, Code, Commit, Push and start a Pull request
 * Each pull request will be tested, pass static code analysis and code review results.
 * All efforts will be made to expedite this process.
+
 ### Guidelines
 * Document your code – it enables others to continue the great work you did on the code and update it.
 
