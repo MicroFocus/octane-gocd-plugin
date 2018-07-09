@@ -51,7 +51,7 @@ import java.util.List;
 
 /**
  * This class is the entry point into the Octane-PluginService.
- * As described in <a href="https://github.com/HPSoftware/octane-ci-java-sdk/blob/master/README.md">ReadMe</a>
+ * As described in <a href="https://github.com/MicroFocus/octane-ci-java-sdk/blob/master/README.md">ReadMe</a>
  * it derives from {@link CIPluginServicesBase}.
  */
 public class GoPluginServices extends CIPluginServicesBase {
