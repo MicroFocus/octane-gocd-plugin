@@ -191,8 +191,10 @@ allprojects {
 }
 
 tasks.withType(GenerateMavenPom) {
-    signArchives.dependsOn it
-    signArchives.sign it.outputs.files.singleFile
+	if (!project.version.endsWith('-SNAPSHOT')) {
+		signArchives.dependsOn it
+		signArchives.sign it.outputs.files.singleFile
+	}
 }
 
 signing {
