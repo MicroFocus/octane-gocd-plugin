@@ -33,7 +33,6 @@ import com.hp.octane.integrations.dto.snapshots.SnapshotPhase;
 import com.hp.octane.integrations.dto.tests.BuildContext;
 import com.hp.octane.integrations.dto.tests.TestRun;
 import com.hp.octane.integrations.dto.tests.TestsResult;
-import com.hp.octane.integrations.services.tests.TestsServiceImpl;
 import com.hp.octane.integrations.spi.CIPluginServicesBase;
 import com.microfocus.adm.almoctane.ciplugins.gocd.dto.*;
 import com.microfocus.adm.almoctane.ciplugins.gocd.plugin.converter.OctaneTestResultsBuilder;
