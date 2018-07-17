@@ -33,6 +33,7 @@ import com.hp.octane.integrations.dto.snapshots.SnapshotPhase;
 import com.hp.octane.integrations.dto.tests.BuildContext;
 import com.hp.octane.integrations.dto.tests.TestRun;
 import com.hp.octane.integrations.dto.tests.TestsResult;
+import com.hp.octane.integrations.services.tests.TestsServiceImpl;
 import com.hp.octane.integrations.spi.CIPluginServicesBase;
 import com.microfocus.adm.almoctane.ciplugins.gocd.dto.*;
 import com.microfocus.adm.almoctane.ciplugins.gocd.plugin.converter.OctaneTestResultsBuilder;
@@ -42,7 +43,8 @@ import com.microfocus.adm.almoctane.ciplugins.gocd.util.checker.Checker;
 import com.microfocus.adm.almoctane.ciplugins.gocd.util.checker.ListChecker;
 import com.microfocus.adm.almoctane.ciplugins.gocd.util.converter.Converter;
 import com.microfocus.adm.almoctane.ciplugins.gocd.util.converter.ListConverter;
-import com.thoughtworks.go.plugin.api.logging.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.net.*;
 import java.util.ArrayList;
@@ -56,7 +58,8 @@ import java.util.List;
  */
 public class GoPluginServices extends CIPluginServicesBase {
 
-	private static final Logger Log = Logger.getLoggerFor(GoPluginServices.class);
+	private static final Logger Log = LogManager.getLogger(GoPluginServices.class);
+
 
 	private OctaneGoCDPluginSettings settings;
 	private String goServerID;
@@ -148,7 +151,7 @@ public class GoPluginServices extends CIPluginServicesBase {
 
 	@Override
 	public CIProxyConfiguration getProxyConfiguration(final String targetHost) {
-		Log.info("proxy configuration requested for host '" + targetHost + "'");
+		Log.debug("proxy configuration requested for host '" + targetHost + "'");
 		try {
 			final String protocol = new URL(targetHost).getProtocol();
 			if (System.getProperty(protocol + ".proxyHost") != null) { // is a proxy defined for this protocol?
@@ -162,7 +165,7 @@ public class GoPluginServices extends CIPluginServicesBase {
 				Log.info("using no proxy");
 			}
 		} catch (MalformedURLException e) {
-			Log.error("Could not parse given targetHost as URL. Proceeding with using no proxy configuration.");
+			Log.error("Could not parse given targetHost as URL: "+targetHost+". Proceeding with using no proxy configuration.");
 		}
 		return null; // use no proxy
 	}
@@ -371,9 +374,13 @@ public class GoPluginServices extends CIPluginServicesBase {
 				}
 			}
 		}
+
 		if(result.getTestRuns() == null || result.getTestRuns().isEmpty()){
+			Log.info("There are no test results for '" + jobId + "' and buildNumber '" + buildNumber + "'");
 			return null;
 		}
+		Log.info("Sending "+ result.getTestRuns().size() +" test results for '" + jobId + "', buildNumber '" + buildNumber + "'");
+
 		return result;
 	}
 
