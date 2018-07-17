@@ -6,7 +6,7 @@ build:
   verbosity: detailed
 
 build_script:
-  - gradle assemble
+  - gradlew build
 
 test_script:
   - gradle check

@@ -42,7 +42,8 @@ import com.microfocus.adm.almoctane.ciplugins.gocd.util.checker.Checker;
 import com.microfocus.adm.almoctane.ciplugins.gocd.util.checker.ListChecker;
 import com.microfocus.adm.almoctane.ciplugins.gocd.util.converter.Converter;
 import com.microfocus.adm.almoctane.ciplugins.gocd.util.converter.ListConverter;
-import com.thoughtworks.go.plugin.api.logging.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.net.*;
 import java.util.ArrayList;
@@ -51,12 +52,13 @@ import java.util.List;
 
 /**
  * This class is the entry point into the Octane-PluginService.
- * As described in <a href="https://github.com/HPSoftware/octane-ci-java-sdk/blob/master/README.md">ReadMe</a>
+ * As described in <a href="https://github.com/MicroFocus/octane-ci-java-sdk/blob/master/README.md">ReadMe</a>
  * it derives from {@link CIPluginServicesBase}.
  */
 public class GoPluginServices extends CIPluginServicesBase {
 
-	private static final Logger Log = Logger.getLoggerFor(GoPluginServices.class);
+	private static final Logger Log = LogManager.getLogger(GoPluginServices.class);
+
 
 	private OctaneGoCDPluginSettings settings;
 	private String goServerID;
@@ -148,7 +150,7 @@ public class GoPluginServices extends CIPluginServicesBase {
 
 	@Override
 	public CIProxyConfiguration getProxyConfiguration(final String targetHost) {
-		Log.info("proxy configuration requested for host '" + targetHost + "'");
+		Log.debug("proxy configuration requested for host '" + targetHost + "'");
 		try {
 			final String protocol = new URL(targetHost).getProtocol();
 			if (System.getProperty(protocol + ".proxyHost") != null) { // is a proxy defined for this protocol?
@@ -162,7 +164,7 @@ public class GoPluginServices extends CIPluginServicesBase {
 				Log.info("using no proxy");
 			}
 		} catch (MalformedURLException e) {
-			Log.error("Could not parse given targetHost as URL. Proceeding with using no proxy configuration.");
+			Log.error("Could not parse given targetHost as URL: "+targetHost+". Proceeding with using no proxy configuration.");
 		}
 		return null; // use no proxy
 	}
@@ -279,6 +281,7 @@ public class GoPluginServices extends CIPluginServicesBase {
 	/**
 	 * Helper method to convert a single {@link GoPipelineInstance} into {@link SnapshotNode}.
 	 * @param instance to convert. Can be null.
+	 * @param allStagesSuccessful
 	 * @return the SnapshotNode or null, if null was given.
 	 */
 	protected SnapshotNode createSnapshotNode(final GoPipelineInstance instance, boolean allStagesSuccessful) {
@@ -370,9 +373,13 @@ public class GoPluginServices extends CIPluginServicesBase {
 				}
 			}
 		}
+
 		if(result.getTestRuns() == null || result.getTestRuns().isEmpty()){
+			Log.info("There are no test results for '" + jobId + "' and buildNumber '" + buildNumber + "'");
 			return null;
 		}
+		Log.info("Sending "+ result.getTestRuns().size() +" test results for '" + jobId + "', buildNumber '" + buildNumber + "'");
+
 		return result;
 	}
 

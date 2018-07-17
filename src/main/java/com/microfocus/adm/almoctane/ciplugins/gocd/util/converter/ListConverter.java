@@ -60,11 +60,11 @@ public class ListConverter<Source, Target> implements Converter<Collection<Sourc
 	/**
 	 * This is a convenience method to allow a more compact code in the using classes.
 	 *
-	 * @param items
+	 * @param items items to convert
 	 * @param converter
 	 * @param <Source>
 	 * @param <Target>
-	 * @return
+	 * @return the converter list
 	 */
 	public static <Source, Target> List<Target> convert(Collection<Source> items, Converter<Source, Target> converter) {
 		return new ListConverter<>(converter).convert(items);

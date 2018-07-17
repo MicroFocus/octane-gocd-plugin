@@ -108,11 +108,13 @@ public class NUnitTestSuite extends NUnitTest {
 
 	public List<NUnitTestCase> getAllTestCases() {
 		final List<NUnitTestCase> cases = new ArrayList<>();
-		for (NUnitTest test : tests) {
-			if (test instanceof NUnitTestSuite) {
-				cases.addAll(((NUnitTestSuite)test).getAllTestCases());
-			} else if (test instanceof NUnitTestCase) {
-				cases.add((NUnitTestCase)test);
+		if(tests!=null && tests.size() > 0) {
+			for (NUnitTest test : tests) {
+				if (test instanceof NUnitTestSuite) {
+					cases.addAll(((NUnitTestSuite) test).getAllTestCases());
+				} else if (test instanceof NUnitTestCase) {
+					cases.add((NUnitTestCase) test);
+				}
 			}
 		}
 		return cases;

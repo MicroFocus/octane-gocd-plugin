@@ -64,8 +64,8 @@ public class StatusInfoWrapper {
 	/**
 	 * This helper method help parsing a given time into a {@link Date}.
 	 *
-	 * @param time
-	 * @return
+	 * @param time time to parse
+	 * @return the time in Date format
 	 */
 	public static Date parseTime(String time) {
 		if (time == null) {

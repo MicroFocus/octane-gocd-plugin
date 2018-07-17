@@ -141,7 +141,7 @@ sourceCompatibility = 1.8
 dependencies {
 
         compile 'cd.go.plugin:go-plugin-api:17.9.0'
-        compile('com.hpe.adm.octane.ciplugins:integrations-sdk:1.5.3')
+        compile('com.hpe.adm.octane.ciplugins:integrations-sdk:1.5.19')
         compile 'com.google.code.gson:gson:2.8.2'
         compile 'org.apache.httpcomponents:httpclient:4.5.2' // this httpclient is also contained in the SDK, but some classes of it are missing, so we need to have the original file.
 
@@ -191,8 +191,10 @@ allprojects {
 }
 
 tasks.withType(GenerateMavenPom) {
-    signArchives.dependsOn it
-    signArchives.sign it.outputs.files.singleFile
+	if (!project.version.endsWith('-SNAPSHOT')) {
+		signArchives.dependsOn it
+		signArchives.sign it.outputs.files.singleFile
+	}
 }
 
 signing {
