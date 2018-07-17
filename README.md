@@ -1,8 +1,15 @@
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/96323a38b84b4fce981761d3f30b99ec)](https://www.codacy.com/app/HPSoftware/octane-gocd-plugin?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=MicroFocus/octane-gocd-plugin&amp;utm_campaign=Badge_Grade)
+![MICROFOCUS LOGO](https://upload.wikimedia.org/wikipedia/commons/4/4e/MicroFocus_logo_blue.png)
 
-[![Build status](https://ci.appveyor.com/api/projects/status/y2e0msiuq88o0ddt?svg=true)](https://ci.appveyor.com/project/m-seldin/octane-gocd-plugin-isjhc)
+Project status: [![Build status](https://ci.appveyor.com/api/projects/status/l7452nnv54r65owo/branch/master?svg=true)](https://ci.appveyor.com/project/m-seldin/octane-gocd-plugin-isjhc)
 
-# Micro Focus ALM Octane GoCD plugin 
+Master release status: [![Build status](https://ci.appveyor.com/api/projects/status/l7452nnv54r65owo/branch/master?svg=true)](https://ci.appveyor.com/project/m-seldin/octane-gocd-plugin-isjhc/build/master%2020
+)
+## Relevant links
+-	**Download the most recent LTS version of the plugin** at [GOCD plugin GitHub](https://github.com/MicroFocus/octane-gocd-plugin/releases)
+-	**Check the open issues (and add new issues)** at [Github issues](https://github.com/MicroFocus/octane-gocd-plugin/issues)
+
+
+# ALM Octane GoCD plugin 
 This plugin integrates GoCD with ALM Octane, enabling ALM Octane to display GoCD pipelines, trigger pipeline runs, and track build and test run results, as well as committed changes. 
 
 Note: You can connect your GoCD server to only one Space in ALM Octane. The same GoCD server cannot connect to multiple spaces or ALM Octane instances.
@@ -64,9 +71,14 @@ The plugin supports only test results in the following formats:
 * Follow the standard GIT workflow: Fork, Code, Commit, Push and start a Pull request
 * Each pull request will be tested, pass static code analysis and code review results.
 * All efforts will be made to expedite this process.
+
 ### Guidelines
 * Document your code – it enables others to continue the great work you did on the code and update it.
 
-Feel free to contact us on any question related to contributions - `octane.ci.plugins@gmail.com`
+Feel free to contact us on any question related to contributions - `octane.ci.plugins@gmail.com`   
+
+#### Disclaimer
+
+Certain versions of software accessible here may contain branding from Hewlett-Packard Company (now HP Inc.) and Hewlett Packard Enterprise Company.  As of September 1, 2017, the software is now offered by Micro Focus, a separately owned and operated company.  Any reference to the HP and Hewlett Packard Enterprise/HPE marks is historical in nature, and the HP and Hewlett Packard Enterprise/HPE marks are the property of their respective owners.
 
 

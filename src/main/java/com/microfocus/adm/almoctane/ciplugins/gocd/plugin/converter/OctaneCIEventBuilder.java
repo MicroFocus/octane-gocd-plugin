@@ -74,6 +74,7 @@ public class OctaneCIEventBuilder {
 	/**
 	 * This method will analyze the given 'statusInfo' and may or may not generate
 	 * and send a {@link CIEvent} to Octane.
+	 * @param statusInfo the status of the internal GoCD event
 	 */
 	public void sendCIEvent(StatusInfoWrapper statusInfo) {
 		if (statusInfo == null) {
