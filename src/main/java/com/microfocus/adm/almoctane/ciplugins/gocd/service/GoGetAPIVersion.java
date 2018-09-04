@@ -15,45 +15,39 @@
  *
  */
 
-
 package com.microfocus.adm.almoctane.ciplugins.gocd.service;
 
 import com.google.gson.Gson;
 import com.microfocus.adm.almoctane.ciplugins.gocd.dto.GoPipelineConfig;
 import com.microfocus.adm.almoctane.ciplugins.gocd.dto.GoVersion;
 import com.microfocus.adm.almoctane.ciplugins.gocd.util.GoApiUtil;
+import com.microfocus.adm.almoctane.ciplugins.gocd.util.Streams;
 import com.thoughtworks.go.plugin.api.logging.Logger;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
-import com.microfocus.adm.almoctane.ciplugins.gocd.util.Streams;
 
 import java.io.IOException;
 import java.net.URLEncoder;
 
-/**
- * This class encapsulates the API call to get an complete pipeline configuration from Go.
- * This API service is available since Go Version 15.3.0
- * @see <a href="https://api.gocd.org/current/#get-pipeline-config">Get Pipeline Config</a>
- */
-public class GoGetPipelineConfig {
+public class GoGetAPIVersion {
 
-	private static final Logger Log = Logger.getLoggerFor(GoGetPipelineConfig.class);
+	private static final Logger Log = Logger.getLoggerFor(GoGetAPIVersion.class);
 
 	private final GoApiClient goApiClient;
 
-	public GoGetPipelineConfig(GoApiClient goApiClient) {
+	public GoGetAPIVersion(GoApiClient goApiClient) {
 		this.goApiClient = goApiClient;
 	}
 
-	public GoPipelineConfig get(final String pipelineName) {
+	public GoVersion get() {
 		try {
-			HttpGet request = new HttpGet(GoApiUtil.PIPELINE_CONFIG_API + URLEncoder.encode(pipelineName, "UTF-8"));
-			request.addHeader("Accept", GoApiUtil.getAcceptHeader(GoApiUtil.PIPELINE_CONFIG_API,goApiClient));
+			HttpGet request = new HttpGet(GoApiUtil.GO_VERSION_API);
+			request.addHeader("Accept", "application/vnd.go.cd.v1+json");
 			HttpResponse response = goApiClient.execute(request);
 			if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
 				String content = Streams.readAsString(response.getEntity().getContent());
-				return new Gson().fromJson(content, GoPipelineConfig.class);
+				return new Gson().fromJson(content, GoVersion.class);
 			} else {
 				Log.error("Request got HTTP-" + response.getStatusLine().getStatusCode());
 			}

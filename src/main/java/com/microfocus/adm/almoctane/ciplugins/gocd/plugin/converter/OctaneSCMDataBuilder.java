@@ -45,19 +45,19 @@ public class OctaneSCMDataBuilder {
 					if (materialRevision.getModifications() != null) {
 						scmData.setCommits(new ArrayList<SCMCommit>());
 						for (GoModification modification : materialRevision.getModifications()) {
-							List<SCMChange> changes = new ArrayList<>();
-							SCMChange change = DTOFactory.getInstance().newDTO(SCMChange.class);
-							change.setFile("test1.java");
-							change.setType("edit");
-							changes.add(change);
+//							List<SCMChange> changes = new ArrayList<>();
+//							SCMChange change = DTOFactory.getInstance().newDTO(SCMChange.class);
+//							change.setFile(null);
+//							change.setType("edit");
+//							changes.add(change);
 
 							scmData.getCommits().add(DTOFactory.getInstance().newDTO(SCMCommit.class)
 								.setUser(modification.getUserName())
 								.setUserEmail(modification.getEmailAddress())
 								.setComment(modification.getComment())
 								.setRevId(modification.getRevision())
-								.setTime(modification.getModifiedTime())
-								.setChanges(changes));
+								.setTime(modification.getModifiedTime()));
+//								.setChanges(changes));
 						}
 					}
 				}
