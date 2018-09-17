@@ -164,7 +164,7 @@ public class GoPluginServices extends CIPluginServicesBase {
 				Log.info("using no proxy");
 			}
 		} catch (MalformedURLException e) {
-			Log.error("Could not parse given targetHost as URL: "+targetHost+". Proceeding with using no proxy configuration.");
+			Log.debug("Could not parse given targetHost as URL: "+targetHost+". Proceeding with using no proxy configuration.");
 		}
 		return null; // use no proxy
 	}

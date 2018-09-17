@@ -18,8 +18,11 @@
 package com.microfocus.adm.almoctane.ciplugins.gocd.util;
 
 import com.microfocus.adm.almoctane.ciplugins.gocd.dto.GoVersion;
+import com.microfocus.adm.almoctane.ciplugins.gocd.octane.GoPluginServices;
 import com.microfocus.adm.almoctane.ciplugins.gocd.service.GoApiClient;
 import com.microfocus.adm.almoctane.ciplugins.gocd.service.GoGetAPIVersion;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class GoApiUtil {
 
@@ -30,32 +33,45 @@ public class GoApiUtil {
 	public static final String PIPELINE_CONFIG_API = "/go/api/admin/pipelines/";
 	public static final String GO_VERSION_API = "/go/api/version/";
 
+	private static final Logger Log = LogManager.getLogger(GoApiUtil.class);
+
 	public static synchronized void setGoVersion(GoApiClient goApiClient) {
 		if(GoApiUtil.GO_VERSION == null) {
+			Log.info("Set the version of GO server in order to support the correct API");
 			GoVersion goVersion = new GoGetAPIVersion(goApiClient).get();
 			if (goVersion != null && goVersion.getVersion() != null && !goVersion.getVersion().isEmpty()) {
 				GoApiUtil.GO_VERSION = goVersion.getVersion();
 			} else {
 				GoApiUtil.GO_VERSION = defaultGoVersion;
 			}
+			Log.info("GO server version is:"+GoApiUtil.GO_VERSION);
 		}
 	}
 
+	/**
+	 *
+	 * @param api
+	 * @param apiClient
+	 * @return the acceptHeader according to the version. all information was taken from: https://api.gocd.org/current/
+	 */
 	public static String getAcceptHeader(String api, GoApiClient apiClient){
 
+		String acceptHeader = defaultAcceptHeader;
 		setGoVersion(apiClient);
 		if(PIPELINE_CONFIG_API.equalsIgnoreCase(api)){
+			Log.info("Retrieving Go server version");
 
 			if(versionCompare(GO_VERSION,"18.7.0") >= 0 ) {
-				return "application/vnd.go.cd.v6+json";
+				acceptHeader = "application/vnd.go.cd.v6+json";
 			} else if (versionCompare(GO_VERSION, "18.7.0") <0 && versionCompare(GO_VERSION,"17.12.0" ) >=0){
-				return "application/vnd.go.cd.v5+json";
-			} else {
-				return "application/vnd.go.cd.v4+json";
+				acceptHeader = "application/vnd.go.cd.v5+json";
+			} else if ( versionCompare(GO_VERSION,"17.12.0" ) < 0){
+				acceptHeader = "application/vnd.go.cd.v4+json";
 			}
 		}
 
-		return defaultAcceptHeader;
+		Log.info("Accept header for request: "+api +" and Go version:"+ GO_VERSION +" is: "+acceptHeader);
+		return acceptHeader;
 	}
 
 

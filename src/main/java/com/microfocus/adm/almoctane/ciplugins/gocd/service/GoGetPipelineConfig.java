@@ -59,6 +59,8 @@ public class GoGetPipelineConfig {
 			}
 		} catch (IOException e) {
 			Log.error("Could not perform request", e);
+		} catch (Exception e){
+			Log.error("Could not perform request", e);
 		}
 		return null;
 	}
