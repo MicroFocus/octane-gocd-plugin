@@ -35,6 +35,7 @@ import com.hp.octane.integrations.dto.tests.TestRun;
 import com.hp.octane.integrations.dto.tests.TestsResult;
 import com.hp.octane.integrations.spi.CIPluginServicesBase;
 import com.microfocus.adm.almoctane.ciplugins.gocd.dto.*;
+import com.microfocus.adm.almoctane.ciplugins.gocd.plugin.OctaneGoCDPlugin;
 import com.microfocus.adm.almoctane.ciplugins.gocd.plugin.converter.OctaneTestResultsBuilder;
 import com.microfocus.adm.almoctane.ciplugins.gocd.plugin.settings.OctaneGoCDPluginSettings;
 import com.microfocus.adm.almoctane.ciplugins.gocd.service.*;
@@ -103,6 +104,9 @@ public class GoPluginServices extends CIPluginServicesBase {
 
 	@Override
 	public CIServerInfo getServerInfo() {
+
+		OctaneGoCDPlugin.setGoServerUrl(this);
+
 		return DTOFactory.getInstance().newDTO(CIServerInfo.class)
 			.setUrl(goServerURL)
 			.setType(CIServerTypes.GOCD.value())

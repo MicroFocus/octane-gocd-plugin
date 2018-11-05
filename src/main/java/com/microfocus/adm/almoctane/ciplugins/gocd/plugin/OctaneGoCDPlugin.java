@@ -67,15 +67,16 @@ import java.util.List;
 public class OctaneGoCDPlugin implements GoPlugin {
 
 	/** This ID is referred to in the plugin.xml */
-	public static String PluginID = "com.microfocus.adm.almoctane.ciplugins.gocd";
-
+	public static String PluginID = "com.microfocus.adm.almoctane.ciplugins.gocd.gocd";
+	private static GoApplicationAccessor GoApplicationAccessor;
 	private static final Logger Log = Logger.getLoggerFor(OctaneGoCDPlugin.class);
-
+	private static GoPluginIdentifier PluginIdentifier;
 	private GoPluginServices goPluginServices = new GoPluginServices();
 
 	@Override
 	public void initializeGoApplicationAccessor(GoApplicationAccessor goApplicationAccessor) {
 		{ // retrieve the current plugin settings from the server.
+			this.GoApplicationAccessor = goApplicationAccessor;
 			DefaultGoApiRequest request = new DefaultGoApiRequest("go.processor.plugin-settings.get", "1.0", pluginIdentifier());
 			request.setRequestBody(new Gson().toJson(Collections.singletonMap("plugin-id", PluginID)));
 			GoApiResponse response = goApplicationAccessor.submit(request);
@@ -90,22 +91,7 @@ public class OctaneGoCDPlugin implements GoPlugin {
 			DefaultGoApiRequest request = new DefaultGoApiRequest("go.processor.server-info.get", "1.0", pluginIdentifier());
 			GoApiResponse response = goApplicationAccessor.submit(request);
 			if (response.responseCode() == 200) {
-				GoServerInfo serverInfo = new Gson().fromJson(response.responseBody(), GoServerInfo.class);
-				String serverURL = serverInfo.getSecureSiteURL();
-				if (serverURL == null || serverURL.isEmpty()) { // fall-back if there is no secure URL
-					serverURL = serverInfo.getSiteURL();
-				}
-				if (serverURL == null || serverURL.isEmpty()) { // auto discover the site URL if there is still none.
-					try {
-						serverURL = "http://" + InetAddress.getLocalHost().getHostName() + ":8153/go";
-					} catch (UnknownHostException e) {
-						throw new IllegalArgumentException("Could not determine the serverURL. Please configure it in Go's Server Configuration.");
-					}
-				}
-				goPluginServices.setGoServerURL(serverURL);
-				Log.info("Go Server URL: " + goPluginServices.getGoServerURL());
-				goPluginServices.setGoServerID(serverInfo.getServerID());
-				Log.info("Go Server ID: " + goPluginServices.getGoServerID());
+				OctaneGoCDPlugin.setGoServerUrl(goPluginServices);
 			}
 		}
 		OctaneSDK.init(goPluginServices);
@@ -148,26 +134,16 @@ public class OctaneGoCDPlugin implements GoPlugin {
 					.put("required", true)
 					.put("secure", true)
 					.build())
-				.put("clientSecretError", new MapBuilder<>(new HashMap<String,Object>())
-					.put("display-name", "Client Secret Error")
-					.put("display-order", "3")
-					.put("required", false)
-					.build())
 				.put("goUsername", new MapBuilder<>(new HashMap<String,Object>())
 					.put("display-name", "Go API Username")
-					.put("display-order", "4")
+					.put("display-order", "3")
 					.put("required", true)
 					.build())
 				.put("goPassword", new MapBuilder<>(new HashMap<String,Object>())
 					.put("display-name", "Go API Password")
-					.put("display-order", "5")
+					.put("display-order", "4")
 					.put("required", true)
 					.put("secure", true)
-					.build())
-				.put("goPasswordError", new MapBuilder<>(new HashMap<String,Object>())
-					.put("display-name", "Go API Password Error")
-					.put("display-order", "6")
-					.put("required", false)
 					.build())
 				.build()));
 		} else if ("go.plugin-settings.validate-configuration".equals(request.requestName())) { // server is asking for a validation of the given values.
@@ -207,6 +183,35 @@ public class OctaneGoCDPlugin implements GoPlugin {
 
 	@Override
 	public GoPluginIdentifier pluginIdentifier() {
-		return new GoPluginIdentifier("notification", Collections.singletonList("1.0"));
+		PluginIdentifier = new GoPluginIdentifier("notification", Collections.singletonList("1.0"));
+		return PluginIdentifier;
+	}
+
+	public static void setGoServerUrl(GoPluginServices goPluginServices){
+		try {
+			DefaultGoApiRequest request = new DefaultGoApiRequest("go.processor.server-info.get", "1.0", OctaneGoCDPlugin.PluginIdentifier);
+			GoApiResponse response = GoApplicationAccessor.submit(request);
+			GoServerInfo serverInfo = new Gson().fromJson(response.responseBody(), GoServerInfo.class);
+
+			String serverURL = serverInfo.getSecureSiteURL();
+			if (serverURL == null || serverURL.isEmpty()) { // fall-back if there is no secure URL
+				serverURL = serverInfo.getSiteURL();
+			}
+			if (serverURL == null || serverURL.isEmpty()) { // auto discover the site URL if there is still none.
+				try {
+					serverURL = "http://" + InetAddress.getLocalHost().getHostName() + ":8153/go";
+				} catch (UnknownHostException e) {
+					throw new IllegalArgumentException("Could not determine the serverURL. Please configure it in Go's Server Configuration.");
+				}
+			}
+
+
+			goPluginServices.setGoServerURL(serverURL);
+			Log.info("Go Server URL: " + goPluginServices.getGoServerURL());
+			goPluginServices.setGoServerID(serverInfo.getServerID());
+			Log.info("Go Server ID: " + goPluginServices.getGoServerID());
+		}catch (Exception e){
+			Log.info("Error setting gocd server url",e);
+		}
 	}
 }
