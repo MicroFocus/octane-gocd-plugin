@@ -45,6 +45,8 @@ public class GoSchedulePipeline {
 		try {
 			HttpPost request = new HttpPost("/go/api/pipelines/" + URLEncoder.encode(pipelineName, "UTF-8") + "/schedule");
 			request.addHeader("Confirm", "true");
+			request.addHeader("X-GoCD-Confirm", "true");
+			request.addHeader("Accept", "application/vnd.go.cd.v1+json");
 			HttpResponse response = goApiClient.execute(request);
 			if (response.getStatusLine().getStatusCode() == HttpStatus.SC_ACCEPTED) {
 				return true;
