@@ -1,4 +1,4 @@
-version: "{branch} {build}"
+version: "{branch}-{build}"
 install:
   - ps: iex (new-object net.webclient).downloadstring('https://get.scoop.sh')
   - ps: scoop install gradle@4.10.2
