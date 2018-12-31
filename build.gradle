@@ -1,6 +1,6 @@
 description = 'GoCD Plugin for connecting with MicroFocus ALM Octane'
 
-version = "$System.env.APPVEYOR_BUILD_VERSION"
+version = "${System.env.APPVEYOR_BUILD_VERSION}-SNAPSHOT"
 group = 'com.microfocus.adm.almoctane.ciplugins'
 
 apply plugin: 'base' // provides cleaning task
