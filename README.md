@@ -1,9 +1,8 @@
 ![MICROFOCUS LOGO](https://upload.wikimedia.org/wikipedia/commons/4/4e/MicroFocus_logo_blue.png)
 
-Project status: [![Build status](https://ci.appveyor.com/api/projects/status/l7452nnv54r65owo/branch/master?svg=true)](https://ci.appveyor.com/project/m-seldin/octane-gocd-plugin-isjhc)
+Project status: [![Build status](https://ci.appveyor.com/api/projects/status/eukx6fvbc7qf17fv?svg=true)](https://ci.appveyor.com/project/OctaneCIPlugins/octane-gocd-plugin)
 
-Master release status: [![Build status](https://ci.appveyor.com/api/projects/status/l7452nnv54r65owo/branch/master?svg=true)](https://ci.appveyor.com/project/m-seldin/octane-gocd-plugin-isjhc/build/master%2020
-)
+Master release status: [![Build status](https://ci.appveyor.com/api/projects/status/eukx6fvbc7qf17fv?svg=true)](https://ci.appveyor.com/project/OctaneCIPlugins/octane-gocd-plugin/master)
 ## Relevant links
 -	**Download the most recent LTS version of the plugin** at [GOCD plugin GitHub](https://github.com/MicroFocus/octane-gocd-plugin/releases)
 -	**Check the open issues (and add new issues)** at [Github issues](https://github.com/MicroFocus/octane-gocd-plugin/issues)
