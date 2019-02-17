@@ -193,7 +193,7 @@ public class GoPluginServices extends CIPluginServicesBase {
 			}
 		}
 		if(excludedPipelines.size() > 0) {
-			Log.warn(String.format("Failed to fetch configuration for pipelines (%s). The GoCD user %s must have pipeline admin permissions",
+			Log.warn(String.format("Failed to fetch configuration for pipelines (%s). The GoCD user '%s' must have pipeline admin permissions",
 				String.join(",", excludedPipelines), settings.getGoUsername()));
 		}
 		return DTOFactory.getInstance().newDTO(CIJobsList.class)
