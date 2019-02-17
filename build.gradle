@@ -146,6 +146,10 @@ dependencies {
         compile 'org.apache.httpcomponents:httpclient:4.5.2' // this httpclient is also contained in the SDK, but some classes of it are missing, so we need to have the original file.
 
         runtime 'commons-logging:commons-logging:1.2' // necessary for the httpclient
+		runtime 'javax.xml.bind:jaxb-api:2.3.0'
+		runtime 'com.sun.xml.bind:jaxb-core:2.3.0.1'
+		runtime 'com.sun.xml.bind:jaxb-impl:2.3.1'
+		runtime 'javax.activation:activation:1.1.1'
 
         testCompile 'junit:junit:4.12'
 }
