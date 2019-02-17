@@ -47,6 +47,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.net.*;
+import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -177,12 +178,23 @@ public class GoPluginServices extends CIPluginServicesBase {
 	public CIJobsList getJobsList(boolean includeParameters) {
 		Log.debug("Retrieving all current pipelines with includeParameters=" + includeParameters);
 		List<PipelineNode> pipelineNodes = new ArrayList<>();
-		for (GoPipelineGroup group : new GoGetPipelineGroups(createGoApiClient()).get()) {
+		GoApiClient goApiClient = createGoApiClient();
+		List<String> excludedPipelines = new ArrayList<>();
+		for (GoPipelineGroup group : new GoGetPipelineGroups(goApiClient).get()) {
 			for (GoPipeline pipeline : group.getPipelines()) {
-				pipelineNodes.add(DTOFactory.getInstance().newDTO(PipelineNode.class)
-					.setJobCiId(pipeline.getName())
-					.setName(pipeline.getName()));
+				GoPipelineConfig pipelineConfig = new GoGetPipelineConfig(goApiClient).get(pipeline.getName());
+				if(pipelineConfig != null) {
+					pipelineNodes.add(DTOFactory.getInstance().newDTO(PipelineNode.class)
+						.setJobCiId(pipeline.getName())
+						.setName(pipeline.getName()));
+				} else {
+					excludedPipelines.add(pipeline.getName());
+				}
 			}
+		}
+		if(excludedPipelines.size() > 0) {
+			Log.warn(String.format("Failed to fetch configuration for pipelines (%s). The GoCD user %s must have pipeline admin permissions",
+				String.join(",", excludedPipelines), settings.getGoUsername()));
 		}
 		return DTOFactory.getInstance().newDTO(CIJobsList.class)
 			.setJobs(pipelineNodes.toArray(new PipelineNode[pipelineNodes.size()]));
@@ -388,8 +400,13 @@ public class GoPluginServices extends CIPluginServicesBase {
 	}
 
 	@Override
-	public void runPipeline(String ciJobId, String originalBody) {
-		Log.debug("Triggering pipeline '" + ciJobId + "' to run");
-		new GoSchedulePipeline(createGoApiClient()).trigger(ciJobId);
+	public void runPipeline(String pipelineName, String originalBody) {
+		Log.debug("Triggering pipeline '" + pipelineName + "' to run");
+		GoApiClient goApiClient = createGoApiClient();
+		GoPipelineConfig pipelineConfig = new GoGetPipelineConfig(goApiClient).get(pipelineName);
+		String username = settings.getGoUsername();
+		if(pipelineConfig == null) throw new AccessControlException("Failed to fetch configuration for pipeline '" + pipelineName + "'. The GoCD user " + username + " must have pipeline admin permissions");
+		boolean res = new GoSchedulePipeline(goApiClient).trigger(pipelineName);
+		if(!res) throw new RuntimeException("Failed to run pipeline '" + pipelineName + "'. See GoCD server logs for more details.");
 	}
 }
