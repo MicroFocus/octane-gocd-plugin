@@ -64,11 +64,9 @@ public class OctaneCIEventBuilder {
 	protected static final Logger Log = Logger.getLoggerFor(OctaneCIEventBuilder.class);
 
 	private final GoApiClient goApiClient;
-	private final OctaneSDK octaneInstance;
 
-	public OctaneCIEventBuilder(final GoApiClient goApiClient, final OctaneSDK octaneInstance) {
+	public OctaneCIEventBuilder(final GoApiClient goApiClient) {
 		this.goApiClient = goApiClient;
-		this.octaneInstance = octaneInstance;
 	}
 
 	/**
@@ -172,7 +170,7 @@ public class OctaneCIEventBuilder {
 			event.setStartTime(createTime.getTime());
 		}
 
-		octaneInstance.getEventsService().publishEvent(event);
+		OctaneSDK.getClients().forEach(client -> client.getEventsService().publishEvent(event));
 	}
 
 	private void sendPipelineSCMEvent(StatusInfoWrapper statusInfo, GoPipelineInstance pipelineInstance){
@@ -193,7 +191,7 @@ public class OctaneCIEventBuilder {
 					.setPhaseType(PhaseType.INTERNAL)
 					.setScmData(scmData);
 
-				OctaneSDK.getInstance().getEventsService().publishEvent(scmEvent);
+				OctaneSDK.getClients().forEach(client -> client.getEventsService().publishEvent(scmEvent));
 			}
 		}
 	}
@@ -213,8 +211,7 @@ public class OctaneCIEventBuilder {
 			.setDuration(Long.valueOf(1));
 
 		//setTime(event, statusInfo);
-
-		octaneInstance.getEventsService().publishEvent(event);
+		OctaneSDK.getClients().forEach(client -> client.getEventsService().publishEvent(event));
 	}
 
 	private void sendPipelineStartEvent(StatusInfoWrapper statusInfo) {
@@ -246,7 +243,7 @@ public class OctaneCIEventBuilder {
 		}
 		event.setEstimatedDuration(estimatedDuration);
 
-		octaneInstance.getEventsService().publishEvent(event);
+		OctaneSDK.getClients().forEach(client -> client.getEventsService().publishEvent(event));
 	}
 
 	private void sendPipelineEndEvent(StatusInfoWrapper statusInfo) {
@@ -273,10 +270,12 @@ public class OctaneCIEventBuilder {
 			}
 		}
 	//	event.setScmData(new OctaneSCMDataBuilder().retrieveFrom(pipelineInstance));
-		octaneInstance.getEventsService().publishEvent(event);
+		OctaneSDK.getClients().forEach(client -> client.getEventsService().publishEvent(event));
 		sendPipelineSCMEvent(statusInfo, pipelineInstance);
 		// tell octane to request the test results.
-		octaneInstance.getTestsService().enqueuePushTestsResult(pipelineName, pipelineCounter);
+
+		OctaneSDK.getClients().forEach(client ->
+			client.getTestsService().enqueuePushTestsResult(pipelineName, pipelineCounter));
 	}
 
 	/**

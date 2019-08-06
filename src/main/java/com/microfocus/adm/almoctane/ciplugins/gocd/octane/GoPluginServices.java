@@ -17,9 +17,8 @@
 
 package com.microfocus.adm.almoctane.ciplugins.gocd.octane;
 
+import com.hp.octane.integrations.CIPluginServices;
 import com.hp.octane.integrations.dto.DTOFactory;
-import com.hp.octane.integrations.dto.configuration.CIProxyConfiguration;
-import com.hp.octane.integrations.dto.configuration.OctaneConfiguration;
 import com.hp.octane.integrations.dto.general.CIJobsList;
 import com.hp.octane.integrations.dto.general.CIPluginInfo;
 import com.hp.octane.integrations.dto.general.CIServerInfo;
@@ -33,11 +32,9 @@ import com.hp.octane.integrations.dto.snapshots.SnapshotPhase;
 import com.hp.octane.integrations.dto.tests.BuildContext;
 import com.hp.octane.integrations.dto.tests.TestRun;
 import com.hp.octane.integrations.dto.tests.TestsResult;
-import com.hp.octane.integrations.spi.CIPluginServicesBase;
 import com.microfocus.adm.almoctane.ciplugins.gocd.dto.*;
 import com.microfocus.adm.almoctane.ciplugins.gocd.plugin.OctaneGoCDPlugin;
 import com.microfocus.adm.almoctane.ciplugins.gocd.plugin.converter.OctaneTestResultsBuilder;
-import com.microfocus.adm.almoctane.ciplugins.gocd.plugin.settings.OctaneGoCDPluginSettings;
 import com.microfocus.adm.almoctane.ciplugins.gocd.service.*;
 import com.microfocus.adm.almoctane.ciplugins.gocd.util.checker.Checker;
 import com.microfocus.adm.almoctane.ciplugins.gocd.util.checker.ListChecker;
@@ -46,33 +43,23 @@ import com.microfocus.adm.almoctane.ciplugins.gocd.util.converter.ListConverter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.InputStream;
 import java.net.*;
 import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 /**
  * This class is the entry point into the Octane-PluginService.
  * As described in <a href="https://github.com/MicroFocus/octane-ci-java-sdk/blob/master/README.md">ReadMe</a>
- * it derives from {@link CIPluginServicesBase}.
+ * it derives from {@link CIPluginServices}.
  */
-public class GoPluginServices extends CIPluginServicesBase {
+public class GoPluginServices extends CIPluginServices {
 
 	private static final Logger Log = LogManager.getLogger(GoPluginServices.class);
 
-
-	private OctaneGoCDPluginSettings settings;
-	private String goServerID;
-	private String goServerURL;
-
-	public OctaneGoCDPluginSettings getSettings() {
-		return settings;
-	}
-
-	public void setSettings(OctaneGoCDPluginSettings settings) {
-		this.settings = settings;
-	}
+	private static String goServerID;
+	private static String goServerURL;
 
 	public String getGoServerID() {
 		return goServerID;
@@ -92,7 +79,7 @@ public class GoPluginServices extends CIPluginServicesBase {
 
 	public GoApiClient createGoApiClient() {
 		try {
-			return new GoApiClient(new URL(goServerURL), settings.getGoUsername(), settings.getGoPassword());
+			return new GoApiClient(new URL(goServerURL), OctaneGoCDPlugin.getSettings().getGoUsername(), OctaneGoCDPlugin.getSettings().getGoPassword());
 		} catch (MalformedURLException e) {
 			throw new IllegalArgumentException("Could not parse the given serverURL '" + goServerURL + "'", e);
 		}
@@ -115,64 +102,6 @@ public class GoPluginServices extends CIPluginServicesBase {
 			.setInstanceId(goServerID);
 	}
 
-	@Override
-	public OctaneConfiguration getOctaneConfiguration() {
-		if (settings == null) {
-			throw new IllegalArgumentException("No settings are given");
-		}
-		if (settings.getServerURL() == null) {
-			throw new IllegalArgumentException("No serverUrl is configured");
-		}
-		final int contextPathPosition = settings.getServerURL().indexOf("/ui");
-		if (contextPathPosition < 0) {
-			throw new IllegalArgumentException("URL does not conform to the expected format");
-		}
-		final String baseURL = settings.getServerURL().substring(0, contextPathPosition);
-
-		final URL url;
-		try {
-			url = new URL(settings.getServerURL());
-		} catch (MalformedURLException e) {
-			throw new IllegalArgumentException("Could not parse serverURL '" + settings.getServerURL() + "'");
-		}
-
-		// find the id of the shared space.
-		for (String param : url.getQuery().split("&")) {
-			if (param.startsWith("p=")) {
-				String[] spaces = param.substring(2).split("/");
-				if (spaces.length < 1 || spaces[0].isEmpty()) {
-					throw new IllegalArgumentException("sharedSpace ID must be present value of parameter p");
-				}
-				return DTOFactory.getInstance().newDTO(OctaneConfiguration.class)
-					.setUrl(baseURL)
-					.setSharedSpace(spaces[0])
-					.setApiKey(settings.getClientID())
-					.setSecret(settings.getClientSecret());
-			}
-		}
-		throw new IllegalArgumentException("URL must contain parameter p with IDs for sharedSpace and workspace");
-	}
-
-	@Override
-	public CIProxyConfiguration getProxyConfiguration(final String targetHost) {
-		Log.debug("proxy configuration requested for host '" + targetHost + "'");
-		try {
-			final String protocol = new URL(targetHost).getProtocol();
-			if (System.getProperty(protocol + ".proxyHost") != null) { // is a proxy defined for this protocol?
-				Log.info("using proxy " + System.getProperty(protocol + ".proxyHost"));
-				return DTOFactory.getInstance().newDTO(CIProxyConfiguration.class)
-					.setHost(System.getProperty(protocol + ".proxyHost"))
-					.setPort(Integer.valueOf(System.getProperty(protocol + ".proxyPort")))
-					.setUsername(System.getProperty(protocol + ".proxyUser"))
-					.setPassword(System.getProperty(protocol + ".proxyPassword"));
-			} else {
-				Log.info("using no proxy");
-			}
-		} catch (MalformedURLException e) {
-			Log.debug("Could not parse given targetHost as URL: "+targetHost+". Proceeding with using no proxy configuration.");
-		}
-		return null; // use no proxy
-	}
 
 	@Override
 	public CIJobsList getJobsList(boolean includeParameters) {
@@ -194,7 +123,7 @@ public class GoPluginServices extends CIPluginServicesBase {
 		}
 		if(excludedPipelines.size() > 0) {
 			Log.warn(String.format("Failed to fetch configuration for pipelines (%s). The GoCD user '%s' must have pipeline admin permissions",
-				String.join(",", excludedPipelines), settings.getGoUsername()));
+				String.join(",", excludedPipelines), OctaneGoCDPlugin.getSettings().getGoUsername()));
 		}
 		return DTOFactory.getInstance().newDTO(CIJobsList.class)
 			.setJobs(pipelineNodes.toArray(new PipelineNode[pipelineNodes.size()]));
@@ -363,7 +292,7 @@ public class GoPluginServices extends CIPluginServicesBase {
 	}
 
 	@Override
-	public TestsResult getTestsResult(final String jobId, final String buildNumber) {
+	public InputStream getTestsResult(final String jobId, final String buildNumber) {
 		Log.debug("Retrieving test results for '" + jobId + "' and buildNumber '" + buildNumber + "'");
 		final TestsResult result = DTOFactory.getInstance().newDTO(TestsResult.class)
 			.setBuildContext(DTOFactory.getInstance().newDTO(BuildContext.class).setServerId(goServerID))
@@ -395,8 +324,8 @@ public class GoPluginServices extends CIPluginServicesBase {
 			return null;
 		}
 		Log.info("Sending "+ result.getTestRuns().size() +" test results for '" + jobId + "', buildNumber '" + buildNumber + "'");
-
-		return result;
+		InputStream output =  DTOFactory.getInstance().dtoToXmlStream(result);
+		return output;
 	}
 
 	@Override
@@ -404,7 +333,7 @@ public class GoPluginServices extends CIPluginServicesBase {
 		Log.debug("Triggering pipeline '" + pipelineName + "' to run");
 		GoApiClient goApiClient = createGoApiClient();
 		GoPipelineConfig pipelineConfig = new GoGetPipelineConfig(goApiClient).get(pipelineName);
-		String username = settings.getGoUsername();
+		String username = OctaneGoCDPlugin.getSettings().getGoUsername();
 		if(pipelineConfig == null) throw new AccessControlException("Failed to fetch configuration for pipeline '" + pipelineName + "'. The GoCD user " + username + " must have pipeline admin permissions");
 		boolean res = new GoSchedulePipeline(goApiClient).trigger(pipelineName);
 		if(!res) throw new RuntimeException("Failed to run pipeline '" + pipelineName + "'. See GoCD server logs for more details.");

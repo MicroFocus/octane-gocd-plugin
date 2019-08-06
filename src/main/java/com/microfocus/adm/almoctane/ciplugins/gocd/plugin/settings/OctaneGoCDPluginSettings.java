@@ -32,6 +32,20 @@ public class OctaneGoCDPluginSettings {
 	private String goUsername;
 	private String goPassword;
 
+	public OctaneGoCDPluginSettings(OctaneGoCDPluginSettings settings){
+		if(settings!=null) {
+			this.serverURL = settings.serverURL;
+			this.clientID = settings.clientID;
+			this.clientSecret = settings.clientSecret;
+			this.goUsername = settings.goUsername;
+			this.goPassword = settings.goPassword;
+		}
+	}
+
+	public OctaneGoCDPluginSettings(){
+
+	}
+
 	public String getServerURL() {
 		return serverURL;
 	}
