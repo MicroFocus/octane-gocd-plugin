@@ -22,9 +22,9 @@
 package com.microfocus.adm.almoctane.ciplugins.gocd.plugin;
 
 import com.google.gson.Gson;
+import com.hp.octane.integrations.OctaneConfiguration;
 import com.hp.octane.integrations.OctaneSDK;
-import com.hp.octane.integrations.dto.configuration.OctaneConfiguration;
-import com.hp.octane.integrations.dto.connectivity.OctaneResponse;
+import com.hp.octane.integrations.exceptions.OctaneConnectivityException;
 import com.microfocus.adm.almoctane.ciplugins.gocd.dto.GenericJsonObject;
 import com.microfocus.adm.almoctane.ciplugins.gocd.dto.GoServerInfo;
 import com.microfocus.adm.almoctane.ciplugins.gocd.plugin.converter.OctaneCIEventBuilder;
@@ -35,6 +35,7 @@ import com.microfocus.adm.almoctane.ciplugins.gocd.plugin.settings.SettingsValid
 import com.microfocus.adm.almoctane.ciplugins.gocd.plugin.validation.ValidationIssue;
 import com.microfocus.adm.almoctane.ciplugins.gocd.octane.GoPluginServices;
 import com.microfocus.adm.almoctane.ciplugins.gocd.service.GoGetPipelineGroupsAsTest;
+import com.microfocus.adm.almoctane.ciplugins.gocd.util.GoApiUtil;
 import com.microfocus.adm.almoctane.ciplugins.gocd.util.MapBuilder;
 import com.microfocus.adm.almoctane.ciplugins.gocd.util.Streams;
 import com.thoughtworks.go.plugin.api.GoApplicationAccessor;
@@ -72,30 +73,45 @@ public class OctaneGoCDPlugin implements GoPlugin {
 	private static final Logger Log = Logger.getLoggerFor(OctaneGoCDPlugin.class);
 	private static GoPluginIdentifier PluginIdentifier;
 	private GoPluginServices goPluginServices = new GoPluginServices();
+	private static OctaneGoCDPluginSettings settings;
 
 	@Override
 	public void initializeGoApplicationAccessor(GoApplicationAccessor goApplicationAccessor) {
-		{ // retrieve the current plugin settings from the server.
+		{   // retrieve the current plugin settings from the server.
 			this.GoApplicationAccessor = goApplicationAccessor;
-			DefaultGoApiRequest request = new DefaultGoApiRequest("go.processor.plugin-settings.get", "1.0", pluginIdentifier());
+			DefaultGoApiRequest request = new DefaultGoApiRequest(GoApiUtil.GET_PLUGIN_SETTINGS_REQ, "1.0", pluginIdentifier());
 			request.setRequestBody(new Gson().toJson(Collections.singletonMap("plugin-id", PluginID)));
 			GoApiResponse response = goApplicationAccessor.submit(request);
 			if (response.responseCode() == 200) {
-				OctaneGoCDPluginSettings settings = new Gson().fromJson(response.responseBody(), OctaneGoCDPluginSettings.class);
-				goPluginServices.setSettings(settings != null ? settings : new OctaneGoCDPluginSettings());
+				OctaneGoCDPluginSettings pluginSettings = new Gson().fromJson(response.responseBody(), OctaneGoCDPluginSettings.class);
+				settings = new OctaneGoCDPluginSettings(pluginSettings);
 			} else {
-				goPluginServices.setSettings(new OctaneGoCDPluginSettings());
+				settings = new OctaneGoCDPluginSettings();
 			}
 		}
 		{ // retrieve server info.
-			DefaultGoApiRequest request = new DefaultGoApiRequest("go.processor.server-info.get", "1.0", pluginIdentifier());
+			DefaultGoApiRequest request = new DefaultGoApiRequest(GoApiUtil.GET_SERVER_INFO_REQ, "1.0", pluginIdentifier());
 			GoApiResponse response = goApplicationAccessor.submit(request);
 			if (response.responseCode() == 200) {
 				OctaneGoCDPlugin.setGoServerUrl(goPluginServices);
 			}
 		}
-		OctaneSDK.init(goPluginServices);
-		Log.info("MicroFocus ALM Octane initialized with '" + goPluginServices.getSettings().getServerURL() + "'");
+
+		try {
+			OctaneSDK.addClient(createOctaneConfiguration(settings), GoPluginServices.class);
+		} catch (Exception e){
+			Log.error("Plugin initialization: unable to create Octane client, please check the connection with Octane. error:"+ e.getMessage(), e);
+		}
+
+		Log.info("MicroFocus ALM Octane initialized with '" + settings.getServerURL() + "'");
+	}
+
+	private OctaneConfiguration createOctaneConfiguration(OctaneGoCDPluginSettings octaneGoCDPluginSettings){
+
+		OctaneConfiguration conf = OctaneConfiguration.createWithUiLocation(goPluginServices.getGoServerID(), octaneGoCDPluginSettings.getServerURL());
+		conf.setSecret(octaneGoCDPluginSettings.getClientSecret());
+		conf.setClient(octaneGoCDPluginSettings.getClientID());
+		return conf;
 	}
 
 	@Override
@@ -104,19 +120,20 @@ public class OctaneGoCDPlugin implements GoPlugin {
 			GenericJsonObject statusInfo = new Gson().fromJson(request.requestBody(), GenericJsonObject.class);
 			try { // trying to retrieve the OctaneSDK-instance might create an exception if Octane is not yet initialized.
 				//new OctaneCIEventBuilder(goPluginServices.createGoApiClient(), OctaneSDK.getInstance()).sendCIEvent(statusInfo);
-				new OctaneCIEventBuilder(goPluginServices.createGoApiClient(), OctaneSDK.getInstance()).sendCIEvent(new StatusInfoWrapper(request.requestBody()));
+				new OctaneCIEventBuilder(goPluginServices.createGoApiClient()).sendCIEvent(new StatusInfoWrapper(request.requestBody()));
 
 			} catch (IllegalArgumentException e) {
 				Log.info("Octane plugin not yet configured. Skipping sending status info. " + e.getMessage());
 			}
 			return new DefaultGoPluginApiResponse(200, new Gson().toJson(Collections.singletonMap("status", "success")));
-		} else if ("go.plugin-settings.get-view".equals(request.requestName())) { // server is requesting the HTML template for this plugin's configuration.
+		} else if (GoApiUtil.GET_SETTINGS_VIEW_REQ.equals(request.requestName())) {
+			// server is requesting the HTML template for this plugin's configuration.
 			try {
 				return new DefaultGoPluginApiResponse(200, new Gson().toJson(Collections.singletonMap("template", Streams.readAsString(getClass().getClassLoader().getResourceAsStream("settings.template.html")))));
 			} catch (IOException e) {
 				Log.error("could not load settings template", e);
 			}
-		} else if ("go.plugin-settings.get-configuration".equals(request.requestName())) { // server is requesting the possible configuration values.
+		} else if (GoApiUtil.GET_SETTINGS_CONFIGURATION_REQ.equals(request.requestName())) { // server is requesting the possible configuration values.
 			return new DefaultGoPluginApiResponse(200, new Gson().toJson(new MapBuilder<>(new HashMap<String,Object>())
 				.put("serverURL", new MapBuilder<>(new HashMap<String,Object>())
 					.put("display-name", "Server URL")
@@ -146,36 +163,53 @@ public class OctaneGoCDPlugin implements GoPlugin {
 					.put("secure", true)
 					.build())
 				.build()));
-		} else if ("go.plugin-settings.validate-configuration".equals(request.requestName())) { // server is asking for a validation of the given values.
+		} else if (GoApiUtil.VALIDATE_SETTINGS_CONFIGURATION_REQ.equals(request.requestName())) { // server is asking for a validation of the given values.
 			final OctaneGoCDPluginSettingsWrapper wrapper = new Gson().fromJson(request.requestBody(), OctaneGoCDPluginSettingsWrapper.class);
 			final OctaneGoCDPluginSettings settings = wrapper.getPluginSettings();
 			final List<ValidationIssue> issues = new SettingsValidator().validate(settings);
+			OctaneConfiguration newConf = null;
 			if (issues.isEmpty()) { // test the connection if no validation issues have been found so far.
-				final GoPluginServices pluginServices = (GoPluginServices)OctaneSDK.getInstance().getPluginServices();
-				pluginServices.setSettings(settings);
+				final GoPluginServices pluginServices = new GoPluginServices();
+
+				//1. test the connection with Octane
 				try {
-					// the the connection towards Octane.
-					final OctaneConfiguration config = pluginServices.getOctaneConfiguration();
-					OctaneResponse response = OctaneSDK.getInstance().getConfigurationService().validateConfiguration(config);
-					if (response.getStatus() == 401) { // authentication failed
-						issues.add(new ValidationIssue("clientID", "Could not authenticate with Octane. Response: " + response.getStatus() + " " + response.getBody()));
-					} else if (response.getStatus() != 200) {
-						issues.add(new ValidationIssue("serverURL", "Could not connect to Octane. Response: " + response.getStatus() + " " + response.getBody()));
+					newConf = createOctaneConfiguration(settings);
+					OctaneSDK.testAndValidateOctaneConfiguration(newConf.getUrl(), newConf.getSharedSpace(), newConf.getClient(), newConf.getSecret(), GoPluginServices.class);
+				} catch (OctaneConnectivityException connExc) {
+					if(OctaneConnectivityException.AUTHENTICATION_FAILURE_KEY.equals(connExc.getErrorMessageKey())){
+						issues.add(new ValidationIssue("clientID", connExc.getErrorMessageVal() +" Response: "+ connExc.getErrorCode()));
+					} else {
+						issues.add(new ValidationIssue("serverURL", connExc.getErrorMessageVal() + " Response: " + connExc.getErrorCode()));
 					}
-					// if this point is reached the configuration seems valid. notify the SDK about the new config.
-					OctaneSDK.getInstance().getRestService().obtainClient(); // make sure the default client exists.
-					OctaneSDK.getInstance().getConfigurationService().notifyChange();
-				} catch (IllegalArgumentException|IOException e) {
+				} catch (Exception e){
 					issues.add(new ValidationIssue("serverURL", "Could not connect to Octane. Exception thrown: " + e));
 				}
-				// test the connection towards GoCD.
+				//2. test the connection towards GoCD.
 				HttpResponse httpResponse = new GoGetPipelineGroupsAsTest(pluginServices.createGoApiClient()).getHttpResponse();
 				if (httpResponse.getStatusLine().getStatusCode() != 200) {
 					issues.add(new ValidationIssue("goUsername", "Could not authenticate with GoCD. Response: " + httpResponse.getStatusLine().getStatusCode() + " " + httpResponse.getStatusLine().getReasonPhrase()));
 				}
+
+				//3. if there is no errors - update hte SDK with the new connection properties
+				if (issues.isEmpty()){
+					//update the current configuration
+					try {
+						if(OctaneSDK.getClients().isEmpty()){
+							OctaneSDK.addClient(newConf,GoPluginServices.class);
+						} else {
+							OctaneConfiguration currentConf = OctaneSDK.getClients().get(0).getConfigurationService().getCurrentConfiguration();
+							currentConf.setSecret(newConf.getSecret());
+							currentConf.setClient(newConf.getClient());
+							currentConf.setUrl(newConf.getUrl());
+						}
+					} catch ( Error e) {
+						Log.error("Validate and connect plugin to Octane: Unable to create Octane client, please check the connection with Octane. error:"+ e.getMessage(), e);
+					}
+				}
 			}
+
 			return new DefaultGoPluginApiResponse(200, new Gson().toJson(issues));
-		} else if ("notifications-interested-in".equals(request.requestName())) {
+		} else if (GoApiUtil.GET_NOTIFICATIONS_INTERESTED_IN_REQ.equals(request.requestName())) {
 			return new DefaultGoPluginApiResponse(200, new Gson().toJson(Collections.singletonMap("notifications", Collections.singletonList("stage-status"))));
 		}
 		throw new UnhandledRequestTypeException(request.requestName());
@@ -187,9 +221,13 @@ public class OctaneGoCDPlugin implements GoPlugin {
 		return PluginIdentifier;
 	}
 
+	public static OctaneGoCDPluginSettings getSettings(){
+		return settings;
+	}
+
 	public static void setGoServerUrl(GoPluginServices goPluginServices){
 		try {
-			DefaultGoApiRequest request = new DefaultGoApiRequest("go.processor.server-info.get", "1.0", OctaneGoCDPlugin.PluginIdentifier);
+			DefaultGoApiRequest request = new DefaultGoApiRequest(GoApiUtil.GET_SERVER_INFO_REQ, "1.0", OctaneGoCDPlugin.PluginIdentifier);
 			GoApiResponse response = GoApplicationAccessor.submit(request);
 			GoServerInfo serverInfo = new Gson().fromJson(response.responseBody(), GoServerInfo.class);
 

@@ -33,6 +33,14 @@ public class GoApiUtil {
 	public static final String PIPELINE_CONFIG_API = "/go/api/admin/pipelines/";
 	public static final String GO_VERSION_API = "/go/api/version/";
 
+
+	public static final String GET_PLUGIN_SETTINGS_REQ = "go.processor.plugin-settings.get";
+	public static final String GET_SERVER_INFO_REQ = "go.processor.server-info.get";
+	public static final String GET_SETTINGS_VIEW_REQ = "go.plugin-settings.get-view";
+	public static final String GET_SETTINGS_CONFIGURATION_REQ = "go.plugin-settings.get-configuration";
+	public static final String VALIDATE_SETTINGS_CONFIGURATION_REQ = "go.plugin-settings.validate-configuration";
+	public static final String GET_NOTIFICATIONS_INTERESTED_IN_REQ = "notifications-interested-in";
+
 	private static final Logger Log = LogManager.getLogger(GoApiUtil.class);
 
 	public static synchronized void setGoVersion(GoApiClient goApiClient) {
