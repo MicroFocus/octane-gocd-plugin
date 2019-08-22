@@ -62,6 +62,7 @@
 		<go.version>17.5.0</go.version>
 		<main.dir>${project.basedir}</main.dir>
 		<maven.compiler.plugin.version>1.8</maven.compiler.plugin.version>
+		<file.name>${project.artifactId}-${project.version}.jar</file.name>
 	</properties>
 
 	<dependencies>
