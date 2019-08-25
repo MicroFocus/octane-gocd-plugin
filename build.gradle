@@ -8,56 +8,6 @@ apply plugin: 'java'
 apply plugin: 'idea'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
-apply plugin: 'signing'
-apply plugin: "io.codearte.nexus-staging"
-
-def customizePom(pom) {
-    pom.withXml {
-        def root = asNode()
-
-        // eliminate test-scoped dependencies (no need in maven central POMs)
-        root.dependencies.removeAll { dep ->
-            dep.scope == "test"
-        }
-
-        // add all items necessary for maven central publication
-        root.children().last() + {
-            resolveStrategy = Closure.DELEGATE_FIRST
-
-            description 'Octane CI plugin for GOCD'
-            name 'gocd-ci-plugin'
-            url 'https://github.com/MicroFocus/octane-gocd-plugin'
-            organization {
-                name 'com.microfocus'
-                url 'https://www.microfocus.com/'
-            }/*
-            issueManagement {
-                system 'GitHub'
-                url 'https://github.com/mautini/schemaorg-java/issues'
-            }*/
-            licenses {
-                license {
-                    name 'Apache License, Version 2.0'
-                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                    distribution 'repo'
-                }
-            }
-            scm {
-                url 'https://github.com/MicroFocus/octane-gocd-plugin'
-                connection 'scm:git:git://git@github.com:MicroFocus/octane-gocd-plugin.git'
-                developerConnection 'scm:git:ssh://git@github.com:MicroFocus/octane-gocd-plugin.git'
-            }
-            developers {
-                developer {
-					name 'Ayellet Lazar'
-					organization 'MicroFocus'
-					email 'ayellet.lazar@microfocus.com'
-                }
-            }
-        }
-    }
-}
-
 
 task packageJavadoc(type: Jar, dependsOn: 'javadoc') {
     from javadoc.destinationDir
@@ -122,7 +72,7 @@ buildscript {
 	jcenter()
 	mavenCentral()
     maven {
-      url "http://central.maven.org/maven2/"
+      url "http://central..org/maven2/"
     }
   }
   dependencies {
@@ -142,22 +92,5 @@ allprojects {
     }
 }
 
-tasks.withType(GenerateMavenPom) {
-	if (!project.version.endsWith('-SNAPSHOT')) {
-		signArchives.dependsOn it
-		signArchives.sign it.outputs.files.singleFile
-	}
-}
-
-signing {
-	required {
-        // signing is required if this is a release version and the artifacts are to be published
-        !version.toString().endsWith('-SNAPSHOT') && tasks.withType(PublishToMavenRepository).find {
-             gradle.taskGraph.hasTask it
-        }
-    }
-    sign configurations.archives
-
-}
 
 
