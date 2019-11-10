@@ -22,7 +22,7 @@ jobs:
   dependsOn:
   - AlmOctanePipelineStart
 
-- job: AlmOctanePipelineStart
+- job: AlmOctanePipelineEnd
   condition: always()
   dependsOn:
   - AlmOctanePipelineStart
