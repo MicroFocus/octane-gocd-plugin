@@ -4,23 +4,27 @@
 # https://aka.ms/yaml
 
 jobs:
+- job: AlmOctanePipelineStart
+  condition: always()
+
 - job: Moshe
   steps:
   - script: echo Hello, Moshe!
     displayName: 'Run a one-line script'
+  dependsOn:
+  - AlmOctanePipelineStart
 
-  - script: |
-      echo Moshe Add other tasks to build, test, and deploy your project.
-      echo See https://aka.ms/yaml
-    displayName: 'Run a multi-line script'
 
 - job: Avigail
   steps:
   - script: echo Hello, Avigail!
     displayName: 'Run a one-line script'
+  dependsOn:
+  - AlmOctanePipelineStart
 
-  - script: |
-      echo Avigail Add other tasks to build, test, and deploy your project.
-      echo See https://aka.ms/yaml
-    displayName: 'Run a multi-line script'
-
+- job: AlmOctanePipelineStart
+  condition: always()
+  dependsOn:
+  - AlmOctanePipelineStart
+  - Moshe
+  - Avigail
