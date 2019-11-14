@@ -6,7 +6,7 @@
 variables:
   AlmOctaneConnection: 'Octane'
   AlmOctaneConnection1: 'Octane1'
-  AlmOctaneConnection2: 'Octane2'
+  AlmOctaneConnection2: 'Octane1'
 
 jobs:
 - job: AlmOctanePipelineStart
