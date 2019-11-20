@@ -11,24 +11,32 @@ jobs:
 - job: AlmOctanePipelineStart
   condition: always()
 
-- job: Moshe
+- job: A
   steps:
-  - script: echo Hello, Moshe!
+  - script: echo Hello, Job A!
     displayName: 'Run a one-line script'
   dependsOn:
   - AlmOctanePipelineStart
 
-
-- job: Avigail
+- job: B
+  dependsOn: AlmOctanePipelineStart
+  pool:
+    vmImage: 'ubuntu-latest'
   steps:
-  - script: echo Hello, Avigail!
-    displayName: 'Run a one-line script'
-  dependsOn:
-  - AlmOctanePipelineStart
+  - task: Maven@3
+    inputs:
+      mavenPomFile: 'pom.xml'
+      mavenOptions: '-Xmx3072m'
+      javaHomeOption: 'JDKVersion'
+      jdkVersionOption: '1.8'
+      jdkArchitectureOption: 'x64'
+      publishJUnitResults: true
+      testResultsFiles: '**/surefire-reports/TEST-*.xml'
+      goals: 'package'
 
 - job: AlmOctanePipelineEnd
   condition: always()
   dependsOn:
   - AlmOctanePipelineStart
-  - Moshe
-  - Avigail
+  - A
+  - B
