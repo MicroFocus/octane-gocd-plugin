@@ -4,8 +4,7 @@
 # https://aka.ms/yaml
 
 variables:
-  AlmOctaneConnection1: '''Octane'''
-  #AlmOctaneConnection2: 'Octane2'
+  AlmOctaneConnection1: 'Octane'
 
 jobs:
 - job: AlmOctanePipelineStart
