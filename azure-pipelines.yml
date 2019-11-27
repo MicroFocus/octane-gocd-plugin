@@ -5,6 +5,8 @@
 
 variables:
   AlmOctaneConnection1: 'Daniel1'
+  InjectAlmOctaneTasks: 'true'
+  ALMOctaneLogLevel: 'debug'
 
 jobs:
 - job: AlmOctanePipelineStart
