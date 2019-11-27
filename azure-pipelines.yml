@@ -9,10 +9,7 @@ variables:
 jobs:
 - job: AlmOctanePipelineStart
   condition: always()
-  steps:
-    - task: octane-start-task@1
-      inputs:
-        OctaneServiceConnection: 'Octane'
+
 - job: A
   steps:
   - script: echo Hello, Job A!
