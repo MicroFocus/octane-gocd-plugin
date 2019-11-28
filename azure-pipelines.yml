@@ -5,6 +5,7 @@
 
 variables:
   AlmOctaneConnection1: 'Daniel1'
+  AlmOctaneConnection1Workspaces: '6001'
   InjectAlmOctaneTasks: 'true'
   ALMOctaneLogLevel: 'debug'
 
