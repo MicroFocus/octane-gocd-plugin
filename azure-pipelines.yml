@@ -9,7 +9,7 @@ variables:
   AlmOctaneConnection2: 'Moshe1'
   AlmOctaneConnection2Workspaces: '1002,2001'
   InjectAlmOctaneTasks: 'true'
-  ALMOctaneLogLevel: 'debug'
+  # ALMOctaneLogLevel: 'debug'
 
 jobs:
 - job: AlmOctanePipelineStart
