@@ -78,8 +78,12 @@ public class GoPluginServices extends CIPluginServices {
 	}
 
 	public GoApiClient createGoApiClient() {
+		return createGoApiClient( OctaneGoCDPlugin.getSettings().getGoUsername(),OctaneGoCDPlugin.getSettings().getGoPassword());
+	}
+
+	public GoApiClient createGoApiClient(String goAPIUserName, String goAPIPassword) {
 		try {
-			return new GoApiClient(new URL(goServerURL), OctaneGoCDPlugin.getSettings().getGoUsername(), OctaneGoCDPlugin.getSettings().getGoPassword());
+			return new GoApiClient(new URL(goServerURL), goAPIUserName, goAPIPassword);
 		} catch (MalformedURLException e) {
 			throw new IllegalArgumentException("Could not parse the given serverURL '" + goServerURL + "'", e);
 		}

@@ -30,19 +30,19 @@ import java.io.IOException;
  * is available since Go Version 14.3.0
  * @see <a href="https://api.gocd.org/current/#get-pipeline-config">Get Pipeline Config</a>
  */
-public class GoGetPipelineGroupsAsTest {
+public class GoGetServerHealth {
 
-	private static final Logger Log = Logger.getLoggerFor(GoGetPipelineGroupsAsTest.class);
+	private static final Logger Log = Logger.getLoggerFor(GoGetServerHealth.class);
 
 	private final GoApiClient goApiClient;
 
-	public GoGetPipelineGroupsAsTest(GoApiClient goApiClient) {
+	public GoGetServerHealth(GoApiClient goApiClient) {
 		this.goApiClient = goApiClient;
 	}
 
 	public HttpResponse getHttpResponse() {
 		try {
-			return goApiClient.execute(new HttpGet("/go/api/config/pipeline_groups"));
+			return goApiClient.execute(new HttpGet("/go/api/v1/health"));
 		} catch (IOException e) {
 			Log.error("Could not perform request", e);
 		}

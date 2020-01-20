@@ -34,7 +34,7 @@ import com.microfocus.adm.almoctane.ciplugins.gocd.plugin.settings.OctaneGoCDPlu
 import com.microfocus.adm.almoctane.ciplugins.gocd.plugin.settings.SettingsValidator;
 import com.microfocus.adm.almoctane.ciplugins.gocd.plugin.validation.ValidationIssue;
 import com.microfocus.adm.almoctane.ciplugins.gocd.octane.GoPluginServices;
-import com.microfocus.adm.almoctane.ciplugins.gocd.service.GoGetPipelineGroupsAsTest;
+import com.microfocus.adm.almoctane.ciplugins.gocd.service.GoGetServerHealth;
 import com.microfocus.adm.almoctane.ciplugins.gocd.util.GoApiUtil;
 import com.microfocus.adm.almoctane.ciplugins.gocd.util.MapBuilder;
 import com.microfocus.adm.almoctane.ciplugins.gocd.util.Streams;
@@ -185,7 +185,7 @@ public class OctaneGoCDPlugin implements GoPlugin {
 					issues.add(new ValidationIssue("serverURL", "Could not connect to Octane. Exception thrown: " + e));
 				}
 				//2. test the connection towards GoCD.
-				HttpResponse httpResponse = new GoGetPipelineGroupsAsTest(pluginServices.createGoApiClient()).getHttpResponse();
+				HttpResponse httpResponse = new GoGetServerHealth(pluginServices.createGoApiClient(settings.getGoUsername(),settings.getGoPassword())).getHttpResponse();
 				if (httpResponse.getStatusLine().getStatusCode() != 200) {
 					issues.add(new ValidationIssue("goUsername", "Could not authenticate with GoCD. Response: " + httpResponse.getStatusLine().getStatusCode() + " " + httpResponse.getStatusLine().getReasonPhrase()));
 				}
