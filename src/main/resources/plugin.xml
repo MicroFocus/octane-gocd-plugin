@@ -20,7 +20,7 @@
 <go-plugin id="microfocus.adm.octane.ciplugins.gocd" version="1">
 	<about>
 		<name>ALM Octane GoCD CI Plugin</name>
-		<version>1.0.4</version>
+		<version>1.8</version>
 		<target-go-version>17.11.0</target-go-version>
 		<description>Allows integration of GoCD with MicroFocus ALM Octane: making pipelines and test results accessible in MicroFocus ALM Octane.</description>
 		<vendor>
