@@ -1,31 +1,22 @@
-version: "{branch}-{build}"
 install:
-  - ps: iex (new-object net.webclient).downloadstring('https://get.scoop.sh')
-  - ps: scoop install gradle@4.10.2
-build:
-  verbosity: detailed
+    - ps: |
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          if (!(Test-Path -Path "C:\maven" )) {
+            (new-object System.Net.WebClient).DownloadFile(
+              'http://www.us.apache.org/dist/maven/maven-3/3.5.4/binaries/apache-maven-3.5.4-bin.zip',
+              'C:\maven-bin.zip'
+            )
+            [System.IO.Compression.ZipFile]::ExtractToDirectory("C:\maven-bin.zip", "C:\maven")
+          }
+    - cmd: SET PATH=C:\maven\apache-maven-3.5.4\bin;%JAVA_HOME%\bin;%PATH%
 
 build_script:
-  - gradlew build
+    - mvn compile
 
 test_script:
-  - gradle check
+    - mvn test
 
-branches:
-  only:
-    - master
 
 cache:
-  - C:\Users\appveyor\.gradle
-
-environment:
-  matrix:
-  - JAVA_HOME: C:\Program Files\Java\jdk1.8.0
-
-matrix:
-  fast_finish: true
-
-artifacts:
-- path: ./build/libs
-  name: octane-gocd-plugin.$(appveyor_build_version).jar
-  type: zip
+    - C:\maven\
+    - C:\Users\appveyor\.m2
