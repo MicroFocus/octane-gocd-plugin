@@ -61,7 +61,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<go.version>17.5.0</go.version>
 		<main.dir>${project.basedir}</main.dir>
-		<maven.compiler.plugin.version>1.7.1</maven.compiler.plugin.version>
+		<maven.compiler.plugin.version>1.8</maven.compiler.plugin.version>
 	</properties>
 
 	<dependencies>
