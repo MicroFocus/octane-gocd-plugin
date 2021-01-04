@@ -27,13 +27,13 @@ import com.hp.octane.integrations.OctaneSDK;
 import com.hp.octane.integrations.exceptions.OctaneConnectivityException;
 import com.microfocus.adm.almoctane.ciplugins.gocd.dto.GenericJsonObject;
 import com.microfocus.adm.almoctane.ciplugins.gocd.dto.GoServerInfo;
+import com.microfocus.adm.almoctane.ciplugins.gocd.octane.GoPluginServices;
 import com.microfocus.adm.almoctane.ciplugins.gocd.plugin.converter.OctaneCIEventBuilder;
 import com.microfocus.adm.almoctane.ciplugins.gocd.plugin.converter.StatusInfoWrapper;
 import com.microfocus.adm.almoctane.ciplugins.gocd.plugin.settings.OctaneGoCDPluginSettings;
 import com.microfocus.adm.almoctane.ciplugins.gocd.plugin.settings.OctaneGoCDPluginSettingsWrapper;
 import com.microfocus.adm.almoctane.ciplugins.gocd.plugin.settings.SettingsValidator;
 import com.microfocus.adm.almoctane.ciplugins.gocd.plugin.validation.ValidationIssue;
-import com.microfocus.adm.almoctane.ciplugins.gocd.octane.GoPluginServices;
 import com.microfocus.adm.almoctane.ciplugins.gocd.service.GoGetServerHealth;
 import com.microfocus.adm.almoctane.ciplugins.gocd.util.GoApiUtil;
 import com.microfocus.adm.almoctane.ciplugins.gocd.util.MapBuilder;
@@ -195,8 +195,8 @@ public class OctaneGoCDPlugin implements GoPlugin {
 				if (issues.isEmpty()){
 					//update the current configuration
 					try {
-						if(OctaneSDK.getClients().isEmpty()){
-							OctaneSDK.addClient(newConf,GoPluginServices.class);
+						if (OctaneSDK.getClients().isEmpty()) {
+							OctaneSDK.addClient(newConf, GoPluginServices.class);
 						} else {
 							OctaneConfiguration currentConf = OctaneSDK.getClients().get(0).getConfigurationService().getConfiguration();
 							currentConf.setSecret(newConf.getSecret());
