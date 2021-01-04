@@ -20,7 +20,6 @@ package com.microfocus.adm.almoctane.ciplugins.gocd.service;
 
 import com.google.gson.Gson;
 import com.microfocus.adm.almoctane.ciplugins.gocd.dto.GoPipelineConfig;
-import com.microfocus.adm.almoctane.ciplugins.gocd.dto.GoVersion;
 import com.microfocus.adm.almoctane.ciplugins.gocd.util.GoApiUtil;
 import com.thoughtworks.go.plugin.api.logging.Logger;
 import org.apache.http.HttpResponse;
@@ -49,7 +48,7 @@ public class GoGetPipelineConfig {
 	public GoPipelineConfig get(final String pipelineName) {
 		try {
 			HttpGet request = new HttpGet(GoApiUtil.PIPELINE_CONFIG_API + URLEncoder.encode(pipelineName, "UTF-8"));
-			request.addHeader("Accept", GoApiUtil.getAcceptHeader(GoApiUtil.PIPELINE_CONFIG_API,goApiClient));
+			request.addHeader("Accept", "application/vnd.go.cd.v11+json");
 			HttpResponse response = goApiClient.execute(request);
 			if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
 				String content = Streams.readAsString(response.getEntity().getContent());

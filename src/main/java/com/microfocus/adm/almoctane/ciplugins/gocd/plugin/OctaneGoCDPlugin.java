@@ -174,7 +174,8 @@ public class OctaneGoCDPlugin implements GoPlugin {
 				//1. test the connection with Octane
 				try {
 					newConf = createOctaneConfiguration(settings);
-					OctaneSDK.testAndValidateOctaneConfiguration(newConf.getUrl(), newConf.getSharedSpace(), newConf.getClient(), newConf.getSecret(), GoPluginServices.class);
+					OctaneSDK.testOctaneConfigurationAndFetchAvailableWorkspaces(
+						newConf.getUrl(),  newConf.getSharedSpace(), newConf.getClient(), newConf.getSecret(), GoPluginServices.class);
 				} catch (OctaneConnectivityException connExc) {
 					if(OctaneConnectivityException.AUTHENTICATION_FAILURE_KEY.equals(connExc.getErrorMessageKey())){
 						issues.add(new ValidationIssue("clientID", connExc.getErrorMessageVal() +" Response: "+ connExc.getErrorCode()));
@@ -197,10 +198,10 @@ public class OctaneGoCDPlugin implements GoPlugin {
 						if(OctaneSDK.getClients().isEmpty()){
 							OctaneSDK.addClient(newConf,GoPluginServices.class);
 						} else {
-							OctaneConfiguration currentConf = OctaneSDK.getClients().get(0).getConfigurationService().getCurrentConfiguration();
+							OctaneConfiguration currentConf = OctaneSDK.getClients().get(0).getConfigurationService().getConfiguration();
 							currentConf.setSecret(newConf.getSecret());
 							currentConf.setClient(newConf.getClient());
-							currentConf.setUrl(newConf.getUrl());
+							currentConf.setUrlAndSpace(newConf.getUrl(),newConf.getSharedSpace());
 						}
 					} catch ( Error e) {
 						Log.error("Validate and connect plugin to Octane: Unable to create Octane client, please check the connection with Octane. error:"+ e.getMessage(), e);

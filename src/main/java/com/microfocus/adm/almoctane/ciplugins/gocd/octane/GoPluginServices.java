@@ -23,12 +23,9 @@ import com.hp.octane.integrations.dto.general.CIJobsList;
 import com.hp.octane.integrations.dto.general.CIPluginInfo;
 import com.hp.octane.integrations.dto.general.CIServerInfo;
 import com.hp.octane.integrations.dto.general.CIServerTypes;
+import com.hp.octane.integrations.dto.parameters.CIParameters;
 import com.hp.octane.integrations.dto.pipelines.PipelineNode;
 import com.hp.octane.integrations.dto.pipelines.PipelinePhase;
-import com.hp.octane.integrations.dto.snapshots.CIBuildResult;
-import com.hp.octane.integrations.dto.snapshots.CIBuildStatus;
-import com.hp.octane.integrations.dto.snapshots.SnapshotNode;
-import com.hp.octane.integrations.dto.snapshots.SnapshotPhase;
 import com.hp.octane.integrations.dto.tests.BuildContext;
 import com.hp.octane.integrations.dto.tests.TestRun;
 import com.hp.octane.integrations.dto.tests.TestsResult;
@@ -36,8 +33,6 @@ import com.microfocus.adm.almoctane.ciplugins.gocd.dto.*;
 import com.microfocus.adm.almoctane.ciplugins.gocd.plugin.OctaneGoCDPlugin;
 import com.microfocus.adm.almoctane.ciplugins.gocd.plugin.converter.OctaneTestResultsBuilder;
 import com.microfocus.adm.almoctane.ciplugins.gocd.service.*;
-import com.microfocus.adm.almoctane.ciplugins.gocd.util.checker.Checker;
-import com.microfocus.adm.almoctane.ciplugins.gocd.util.checker.ListChecker;
 import com.microfocus.adm.almoctane.ciplugins.gocd.util.converter.Converter;
 import com.microfocus.adm.almoctane.ciplugins.gocd.util.converter.ListConverter;
 import org.apache.logging.log4j.LogManager;
@@ -108,7 +103,7 @@ public class GoPluginServices extends CIPluginServices {
 
 
 	@Override
-	public CIJobsList getJobsList(boolean includeParameters) {
+	public CIJobsList getJobsList(boolean includeParameters, Long workspaceId) {
 		Log.debug("Retrieving all current pipelines with includeParameters=" + includeParameters);
 		List<PipelineNode> pipelineNodes = new ArrayList<>();
 		GoApiClient goApiClient = createGoApiClient();
@@ -206,96 +201,6 @@ public class GoPluginServices extends CIPluginServices {
 	}
 
 	@Override
-	public SnapshotNode getSnapshotLatest(String ciJobId, boolean subTree) {
-		Log.debug("Retrieving latest snapshot for '" + ciJobId + "' including subTree=" + subTree);
-		final List<GoPipelineInstance> instances = new GoGetPipelineHistory(createGoApiClient()).get(ciJobId);
-		if (instances == null || instances.isEmpty()) {
-			return null;
-		}
-		return convertToSnapshotNode(instances.get(0));
-	}
-
-	@Override
-	public SnapshotNode getSnapshotByNumber(String ciJobId, String buildId, boolean subTree) {
-		Log.debug("Retrieving snapshot with id=" + buildId + " for '" + ciJobId + "' including subTree=" + subTree);
-		int counter;
-		try {
-			counter = Integer.valueOf(buildId);
-		} catch (NumberFormatException e) {
-			throw new IllegalArgumentException("given buildId '" + buildId + "' could not be parsed as Integer", e);
-		}
-		return convertToSnapshotNode(new GoGetPipelineInstance(createGoApiClient()).get(ciJobId, counter));
-	}
-
-	/**
-	 * Helper method to convert a single {@link GoPipelineInstance} into {@link SnapshotNode}.
-	 * @param instance to convert. Can be null.
-	 * @param allStagesSuccessful
-	 * @return the SnapshotNode or null, if null was given.
-	 */
-	protected SnapshotNode createSnapshotNode(final GoPipelineInstance instance, boolean allStagesSuccessful) {
-
-		return DTOFactory.getInstance().newDTO(SnapshotNode.class)
-			.setJobCiId(instance.getName())
-			.setName(instance.getName())
-			.setBuildCiId(instance.getId())
-			.setNumber(String.valueOf(instance.getCounter()))
-			.setResult(allStagesSuccessful ? CIBuildResult.SUCCESS : CIBuildResult.FAILURE)
-			.setStatus(CIBuildStatus.FINISHED)
-			.setStartTime(instance.getFirstScheduledDate())
-			.setDuration(instance.getDuration())
-			.setPhasesInternal(ListConverter.convert(instance.getStages(), new Converter<GoStageInstance, SnapshotPhase>() {
-				@Override
-				public SnapshotPhase convert(GoStageInstance stageInstance) {
-					return DTOFactory.getInstance().newDTO(SnapshotPhase.class)
-						.setName("stages_" + stageInstance.getName())
-						.setBlocking(true)
-						.setBuilds(Collections.singletonList(DTOFactory.getInstance().newDTO(SnapshotNode.class)
-							.setJobCiId(stageInstance.getName())
-							.setName(stageInstance.getName())
-							.setBuildCiId(String.valueOf(stageInstance.getId()))
-							.setNumber(stageInstance.getCounter())
-							.setResult("Passed".equals(stageInstance.getResult()) ? CIBuildResult.SUCCESS : CIBuildResult.FAILURE)
-							.setStatus(CIBuildStatus.FINISHED)
-							.setStartTime(stageInstance.getFirstScheduledDate())
-							.setDuration(stageInstance.getDuration())
-							.setPhasesInternal(Collections.singletonList(DTOFactory.getInstance().newDTO(SnapshotPhase.class)
-								.setName("jobs")
-								.setBlocking(true)
-								.setBuilds(ListConverter.convert(stageInstance.getJobs(), new Converter<GoJobInstance, SnapshotNode>() {
-									@Override
-									public SnapshotNode convert(GoJobInstance jobInstance) {
-										return DTOFactory.getInstance().newDTO(SnapshotNode.class)
-											.setJobCiId(jobInstance.getName())
-											.setName(jobInstance.getName())
-											.setBuildCiId(String.valueOf(jobInstance.getId()))
-											.setResult("Passed".equals(jobInstance.getResult()) ? CIBuildResult.SUCCESS : CIBuildResult.FAILURE)
-											.setStatus(CIBuildStatus.FINISHED)
-											.setStartTime(jobInstance.getScheduledDate())
-											.setDuration(jobInstance.getDuration());
-									}
-								})))
-							)
-						));
-				}
-			}));
-	}
-
-	protected SnapshotNode convertToSnapshotNode(final GoPipelineInstance instance) {
-		if (instance == null) {
-			return null;
-		}
-		final boolean allStagesSuccessful = ListChecker.check(instance.getStages(), new Checker<GoStageInstance>() {
-			@Override
-			public boolean check(GoStageInstance goStageInstance) {
-				return "Passed".equals(goStageInstance.getResult());
-			}
-		});
-
-		return createSnapshotNode(instance,allStagesSuccessful );
-	}
-
-	@Override
 	public InputStream getTestsResult(final String jobId, final String buildNumber) {
 		Log.debug("Retrieving test results for '" + jobId + "' and buildNumber '" + buildNumber + "'");
 		final TestsResult result = DTOFactory.getInstance().newDTO(TestsResult.class)
@@ -333,7 +238,7 @@ public class GoPluginServices extends CIPluginServices {
 	}
 
 	@Override
-	public void runPipeline(String pipelineName, String originalBody) {
+	public void runPipeline(String pipelineName, CIParameters ciParameters) {
 		Log.debug("Triggering pipeline '" + pipelineName + "' to run");
 		GoApiClient goApiClient = createGoApiClient();
 		GoPipelineConfig pipelineConfig = new GoGetPipelineConfig(goApiClient).get(pipelineName);

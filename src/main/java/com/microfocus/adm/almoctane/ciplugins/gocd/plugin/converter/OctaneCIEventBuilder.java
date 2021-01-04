@@ -275,7 +275,8 @@ public class OctaneCIEventBuilder {
 		// tell octane to request the test results.
 
 		OctaneSDK.getClients().forEach(client ->
-			client.getTestsService().enqueuePushTestsResult(pipelineName, pipelineCounter));
+			client.getTestsService().enqueuePushTestsResult(pipelineName, pipelineCounter, null));
+
 	}
 
 	/**
