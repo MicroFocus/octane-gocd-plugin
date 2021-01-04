@@ -170,34 +170,6 @@ public class GoPluginServices extends CIPluginServices {
 		}
 
 		return createPipelineStructure(config);
-
-//		return DTOFactory.getInstance().newDTO(PipelineNode.class)
-//			.setJobCiId(config.getName())
-//			.setName(config.getName())
-//			//.setPhasesInternal(Collections.singletonList(DTOFactory.getInstance().newDTO(PipelinePhase.class)
-//			.setPhasesInternal(Collections.singletonList(DTOFactory.getInstance().newDTO(PipelinePhase.class)
-//				.setName("stages")
-//				.setBlocking(true)
-//				.setJobs(ListConverter.convert(config.getStages(), new Converter<GoStageConfig, PipelineNode>() {
-//					@Override
-//					public PipelineNode convert(GoStageConfig stage) {
-//						return DTOFactory.getInstance().newDTO(PipelineNode.class)
-//							.setJobCiId(stage.getName())
-//							.setName(stage.getName())
-//							.setPhasesInternal(Collections.singletonList(DTOFactory.getInstance().newDTO(PipelinePhase.class)
-//								.setName("jobs")
-//								.setBlocking(true)
-//								.setJobs(ListConverter.convert(stage.getJobs(), new Converter<GoJobConfig, PipelineNode>() {
-//									@Override
-//									public PipelineNode convert(GoJobConfig jobConfig) {
-//										return DTOFactory.getInstance().newDTO(PipelineNode.class)
-//											.setJobCiId(jobConfig.getName())
-//											.setName(jobConfig.getName());
-//									}
-//								}))));
-//
-//					}
-//				}))));
 	}
 
 	@Override
