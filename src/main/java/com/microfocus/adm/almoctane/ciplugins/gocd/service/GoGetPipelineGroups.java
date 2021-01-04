@@ -21,9 +21,10 @@ package com.microfocus.adm.almoctane.ciplugins.gocd.service;
 
 import com.google.gson.Gson;
 import com.microfocus.adm.almoctane.ciplugins.gocd.dto.GoPipelineGroup;
-import com.microfocus.adm.almoctane.ciplugins.gocd.dto.GoPipelineGroups;
+import com.microfocus.adm.almoctane.ciplugins.gocd.dto.GoPipelineGroupsContainer;
 import com.microfocus.adm.almoctane.ciplugins.gocd.util.Streams;
 import com.thoughtworks.go.plugin.api.logging.Logger;
+import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
@@ -49,10 +50,12 @@ public class GoGetPipelineGroups {
 
 	public List<GoPipelineGroup> get() {
 		try {
-			HttpResponse response = goApiClient.execute(new HttpGet("/go/api/config/pipeline_groups"));
+			HttpRequest request = new HttpGet("/go/api/admin/pipeline_groups");
+			request.addHeader("Accept", "application/vnd.go.cd.v1+json");
+			HttpResponse response = goApiClient.execute(request);
 			if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
 				String content = Streams.readAsString(response.getEntity().getContent());
-				return new Gson().fromJson(content, GoPipelineGroups.class);
+			return new Gson().fromJson(content, GoPipelineGroupsContainer.class).get_embedded().getGroups();
 			} else {
 				Log.error("Request got HTTP-" + response.getStatusLine().getStatusCode());
 			}

@@ -31,7 +31,7 @@ public class GoApiUtil {
 	private static final String defaultGoVersion = "18.7.0";
 
 	public static final String PIPELINE_CONFIG_API = "/go/api/admin/pipelines/";
-	public static final String GO_VERSION_API = "/go/api/version/";
+	public static final String GO_VERSION_API = "/go/api/version";
 
 
 	public static final String GET_PLUGIN_SETTINGS_REQ = "go.processor.plugin-settings.get";
@@ -69,7 +69,12 @@ public class GoApiUtil {
 		if(PIPELINE_CONFIG_API.equalsIgnoreCase(api)){
 			Log.info("Retrieving Go server version");
 
-			if(versionCompare(GO_VERSION,"18.7.0") >= 0 ) {
+			if(versionCompare(GO_VERSION,"20.08.0") >= 0){
+				acceptHeader = "application/vnd.go.cd.v11+json";
+			}else if(versionCompare(GO_VERSION,"19.10.0") >= 0){
+				acceptHeader = "application/vnd.go.cd.v10+json";
+			}
+			else if(versionCompare(GO_VERSION,"18.7.0") >= 0 ) {
 				acceptHeader = "application/vnd.go.cd.v6+json";
 			} else if (versionCompare(GO_VERSION, "18.7.0") <0 && versionCompare(GO_VERSION,"17.12.0" ) >=0){
 				acceptHeader = "application/vnd.go.cd.v5+json";

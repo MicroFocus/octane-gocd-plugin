@@ -23,6 +23,7 @@ import com.hp.octane.integrations.dto.general.CIJobsList;
 import com.hp.octane.integrations.dto.general.CIPluginInfo;
 import com.hp.octane.integrations.dto.general.CIServerInfo;
 import com.hp.octane.integrations.dto.general.CIServerTypes;
+import com.hp.octane.integrations.dto.parameters.CIParameters;
 import com.hp.octane.integrations.dto.pipelines.PipelineNode;
 import com.hp.octane.integrations.dto.pipelines.PipelinePhase;
 import com.hp.octane.integrations.dto.tests.BuildContext;
@@ -209,7 +210,7 @@ public class GoPluginServices extends CIPluginServices {
 	}
 
 	@Override
-	public void runPipeline(String pipelineName, String originalBody) {
+	public void runPipeline(String pipelineName, CIParameters ciParameters) {
 		Log.debug("Triggering pipeline '" + pipelineName + "' to run");
 		GoApiClient goApiClient = createGoApiClient();
 		GoPipelineConfig pipelineConfig = new GoGetPipelineConfig(goApiClient).get(pipelineName);
