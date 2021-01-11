@@ -45,7 +45,7 @@ public class GoGetPipelineInstance {
 
 	public GoPipelineInstance get(final String pipelineName, final int counter) {
 		try {
-			HttpGet request = new HttpGet("go/api/admin/pipelines" + URLEncoder.encode(pipelineName, "UTF-8") + "/" + counter);
+			HttpGet request = new HttpGet("/go/api/pipelines/" + URLEncoder.encode(pipelineName, "UTF-8") + "/" + counter);
 			request.addHeader("Accept", "application/vnd.go.cd.v1+json");
 			HttpResponse response = goApiClient.execute(request);
 			if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
