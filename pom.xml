@@ -11,6 +11,7 @@
 		This plugin enables ALM Octane to retrieve and display GoCD build pipelines and synchronize test results with GoCD.
 	</description>
 	<url>https://github.com/MicroFocus/octane-gocd-plugin</url>
+	<name>MicroFocus ALM Octane GoCD CI plugins</name>
 
 	<organization>
 		<name>Micro Focus</name>
@@ -145,6 +146,7 @@
 							<Go-Version>${go.version}</Go-Version>
 						</manifestEntries>
 					</archive>
+					<finalName>${project.artifactId}-${version}</finalName>
 				</configuration>
 			</plugin>
 
@@ -158,6 +160,7 @@
 							<goal>test-jar</goal>
 						</goals>
 						<configuration>
+							<finalName>${project.artifactId}-${version}</finalName>
 							<includes>
 								<include>
 									com/hp/octane/integrations/exported/tests/**
@@ -194,6 +197,7 @@
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<configuration>
 					<excludePackageNames>*.impl</excludePackageNames>
+					<finalName>${project.artifactId}-${version}</finalName>
 				</configuration>
 			</plugin>
 		</plugins>
@@ -243,6 +247,9 @@
 									</goals>
 								</execution>
 							</executions>
+							<configuration>
+								<finalName>${project.artifactId}-${version}</finalName>
+							</configuration>
 						</plugin>
 					</plugins>
 				</pluginManagement>
