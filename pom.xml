@@ -66,12 +66,13 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<go.version>17.5.0</go.version>
+		<go.version>20.8.0</go.version>
 		<main.dir>${project.basedir}</main.dir>
 		<maven.compiler.plugin.version>1.8</maven.compiler.plugin.version>
 		<maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
-		<nexus-staging-maven-plugin.version>1.6.7</nexus-staging-maven-plugin.version>
-		<maven-javadoc-plugin.version>2.10.4</maven-javadoc-plugin.version>
+		<nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
+		<maven-javadoc-plugin.version>3.1.0</maven-javadoc-plugin.version>
+		<maven-source-plugin.version>3.0.1</maven-source-plugin.version>
 	</properties>
 
 	<dependencies>
@@ -155,6 +156,25 @@
 			</plugin>
 
 			<plugin>
+				<artifactId>maven-jar-plugin</artifactId>
+				<groupId>org.apache.maven.plugins</groupId>
+				<executions>
+					<execution>
+						<id>test-jar</id>
+						<goals>
+							<goal>test-jar</goal>
+						</goals>
+						<configuration>
+							<includes>
+								<include>
+									com/hp/octane/integrations/exported/tests/**
+								</include>
+							</includes>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
 				<version>2.4</version>
@@ -184,6 +204,17 @@
 				</configuration>
 			</plugin>
 		</plugins>
+
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+				<includes>
+					<include>sdk.properties</include>
+					<include>log4j2.xml</include>
+				</includes>
+			</resource>
+		</resources>
 	</build>
 
 	<profiles>
@@ -214,7 +245,7 @@
 								<execution>
 									<id>attach-sources</id>
 									<goals>
-										<goal>jar</goal>
+										<goal>jar-no-fork</goal>
 										<goal>test-jar</goal>
 									</goals>
 								</execution>
@@ -222,6 +253,13 @@
 						</plugin>
 					</plugins>
 				</pluginManagement>
+
+				<plugins>
+					<plugin>
+						<artifactId>maven-source-plugin</artifactId>
+						<groupId>org.apache.maven.plugins</groupId>
+					</plugin>
+				</plugins>
 			</build>
 
 		</profile>
