@@ -146,7 +146,7 @@
 							<Go-Version>${go.version}</Go-Version>
 						</manifestEntries>
 					</archive>
-					<finalName>${project.artifactId}-${version}</finalName>
+					<finalName>${project.artifactId}-${project.version}</finalName>
 				</configuration>
 			</plugin>
 
@@ -160,7 +160,7 @@
 							<goal>test-jar</goal>
 						</goals>
 						<configuration>
-							<finalName>${project.artifactId}-${version}</finalName>
+							<finalName>${project.artifactId}-${project.version}</finalName>
 							<includes>
 								<include>
 									com/hp/octane/integrations/exported/tests/**
@@ -197,7 +197,7 @@
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<configuration>
 					<excludePackageNames>*.impl</excludePackageNames>
-					<finalName>${project.artifactId}-${version}</finalName>
+					<finalName>${project.artifactId}-${project.version}</finalName>
 				</configuration>
 			</plugin>
 		</plugins>
@@ -248,7 +248,7 @@
 								</execution>
 							</executions>
 							<configuration>
-								<finalName>${project.artifactId}-${version}</finalName>
+								<finalName>${project.artifactId}-${project.version}</finalName>
 							</configuration>
 						</plugin>
 					</plugins>
