@@ -6,7 +6,7 @@
 
 	<groupId>com.microfocus.adm.almoctane.ciplugins</groupId>
 	<artifactId>gocd-ci-plugin</artifactId>
-	<version>1.7-SNAPHSOT</version>
+	<version>1.7-SNAPSHOT</version>
 	<description>
 		This plugin enables ALM Octane to retrieve and display GoCD build pipelines and synchronize test results with GoCD.
 	</description>
