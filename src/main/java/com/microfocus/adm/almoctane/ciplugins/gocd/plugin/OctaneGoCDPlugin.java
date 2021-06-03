@@ -165,8 +165,9 @@ public class OctaneGoCDPlugin implements GoPlugin {
 				.build()));
 		} else if (GoApiUtil.VALIDATE_SETTINGS_CONFIGURATION_REQ.equals(request.requestName())) { // server is asking for a validation of the given values.
 			final OctaneGoCDPluginSettingsWrapper wrapper = new Gson().fromJson(request.requestBody(), OctaneGoCDPluginSettingsWrapper.class);
-			final OctaneGoCDPluginSettings settings = wrapper.getPluginSettings();
-			final List<ValidationIssue> issues = new SettingsValidator().validate(settings);
+			final OctaneGoCDPluginSettings newSettings = wrapper.getPluginSettings();
+			final List<ValidationIssue> issues = new SettingsValidator().validate(newSettings);
+
 			OctaneConfiguration newConf = null;
 			if (issues.isEmpty()) { // test the connection if no validation issues have been found so far.
 				final GoPluginServices pluginServices = new GoPluginServices();
@@ -177,23 +178,27 @@ public class OctaneGoCDPlugin implements GoPlugin {
 					OctaneSDK.testOctaneConfigurationAndFetchAvailableWorkspaces(
 						newConf.getUrl(),  newConf.getSharedSpace(), newConf.getClient(), newConf.getSecret(), GoPluginServices.class);
 				} catch (OctaneConnectivityException connExc) {
+					Log.error("test Octane connection error:",connExc);
 					if(OctaneConnectivityException.AUTHENTICATION_FAILURE_KEY.equals(connExc.getErrorMessageKey())){
 						issues.add(new ValidationIssue("clientID", connExc.getErrorMessageVal() +" Response: "+ connExc.getErrorCode()));
 					} else {
 						issues.add(new ValidationIssue("serverURL", connExc.getErrorMessageVal() + " Response: " + connExc.getErrorCode()));
 					}
 				} catch (Exception e){
+					Log.error("test Octane connection error:",e);
 					issues.add(new ValidationIssue("serverURL", "Could not connect to Octane. Exception thrown: " + e));
 				}
 				//2. test the connection towards GoCD.
-				HttpResponse httpResponse = new GoGetServerHealth(pluginServices.createGoApiClient(settings.getGoUsername(),settings.getGoPassword())).getHttpResponse();
+				HttpResponse httpResponse = new GoGetServerHealth(pluginServices.createGoApiClient(newSettings.getGoUsername(),newSettings.getGoPassword())).getHttpResponse();
 				if (httpResponse.getStatusLine().getStatusCode() != 200) {
+					Log.error("test GoCD connection error:"+ httpResponse.getStatusLine().getStatusCode() + " " + httpResponse.getStatusLine().getReasonPhrase());
 					issues.add(new ValidationIssue("goUsername", "Could not authenticate with GoCD. Response: " + httpResponse.getStatusLine().getStatusCode() + " " + httpResponse.getStatusLine().getReasonPhrase()));
 				}
 
-				//3. if there is no errors - update hte SDK with the new connection properties
+				//3. if there is no errors - update the SDK with the new connection properties
 				if (issues.isEmpty()){
 					//update the current configuration
+					OctaneGoCDPlugin.settings = new OctaneGoCDPluginSettings(newSettings);
 					try {
 						if (OctaneSDK.getClients().isEmpty()) {
 							OctaneSDK.addClient(newConf, GoPluginServices.class);
