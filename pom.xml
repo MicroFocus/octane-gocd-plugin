@@ -209,6 +209,8 @@
 				<includes>
 					<include>sdk.properties</include>
 					<include>log4j2.xml</include>
+					<include>plugin.xml</include>
+					<include>settings.template.html</include>
 				</includes>
 			</resource>
 		</resources>
