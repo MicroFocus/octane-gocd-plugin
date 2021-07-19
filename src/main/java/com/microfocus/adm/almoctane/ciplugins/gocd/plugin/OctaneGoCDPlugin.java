@@ -174,7 +174,7 @@ public class OctaneGoCDPlugin implements GoPlugin {
 
 				//1. test the connection with Octane
 				try {
-					newConf = createOctaneConfiguration(settings);
+					newConf = createOctaneConfiguration(newSettings);
 					OctaneSDK.testOctaneConfigurationAndFetchAvailableWorkspaces(
 						newConf.getUrl(),  newConf.getSharedSpace(), newConf.getClient(), newConf.getSecret(), GoPluginServices.class);
 				} catch (OctaneConnectivityException connExc) {
