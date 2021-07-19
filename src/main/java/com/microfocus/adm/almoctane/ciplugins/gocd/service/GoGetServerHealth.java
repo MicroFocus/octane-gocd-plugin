@@ -42,7 +42,11 @@ public class GoGetServerHealth {
 
 	public HttpResponse getHttpResponse() {
 		try {
-			return goApiClient.execute(new HttpGet("/go/api/v1/health"));
+			HttpGet request = new HttpGet("/go/api/server_health_messages");
+			request.addHeader("Accept", "application/vnd.go.cd.v1+json");
+
+			return goApiClient.execute(request);
+
 		} catch (IOException e) {
 			Log.error("Could not perform request", e);
 		}
