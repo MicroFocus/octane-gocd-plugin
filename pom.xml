@@ -126,7 +126,7 @@
 				<configuration>
 					<source>${maven.compiler.plugin.version}</source>
 					<target>${maven.compiler.plugin.version}</target>
-					<release>11</release>
+					<!--release>11</release-->
 				</configuration>
 			</plugin>
 
