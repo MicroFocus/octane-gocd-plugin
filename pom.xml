@@ -11,11 +11,11 @@
 		This plugin enables ALM Octane to retrieve and display GoCD build pipelines and synchronize test results with GoCD.
 	</description>
 	<url>https://github.com/MicroFocus/octane-gocd-plugin</url>
-	<name>MicroFocus ALM Octane GoCD CI plugins</name>
+	<name>OpenText ALM Octane GoCD CI plugins</name>
 
 	<organization>
-		<name>Micro Focus</name>
-		<url>https://www.microfocus.com/</url>
+		<name>Open Text</name>
+		<url>https://www.microfocus.com/opentext</url>
 	</organization>
 
 	<licenses>
@@ -25,22 +25,6 @@
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
-
-	<developers>
-		<developer>
-			<id>lazara3</id>
-			<name>Ayellet Lazar</name>
-			<email>ayellet.lazar@microfocus.com</email>
-			<organization>Micro Focus</organization>
-		</developer>
-		<developer>
-			<id>radislavB</id>
-			<name>Radislav Berkovich</name>
-			<email>radislav.berkovich@microfocus.com</email>
-			<organization>Micro Focus</organization>
-		</developer>
-	</developers>
-
 
 	<scm>
 		<connection>scm:git:git://git@github.com:MicroFocus/octane-gocd-plugin.git</connection>

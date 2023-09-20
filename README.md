@@ -1,4 +1,4 @@
-![MICROFOCUS LOGO](https://upload.wikimedia.org/wikipedia/commons/4/4e/MicroFocus_logo_blue.png)
+![OPENTEXT LOGO]((https://upload.wikimedia.org/wikipedia/commons/1/1b/OpenText_logo.svg)
 
 Project status: [![Build status](https://ci.appveyor.com/api/projects/status/eukx6fvbc7qf17fv?svg=true)](https://ci.appveyor.com/project/OctaneCIPlugins/octane-gocd-plugin)
 
@@ -78,6 +78,8 @@ Feel free to contact us on any question related to contributions - `octane.ci.pl
 
 #### Disclaimer
 
-Certain versions of software accessible here may contain branding from Hewlett-Packard Company (now HP Inc.) and Hewlett Packard Enterprise Company.  As of September 1, 2017, the software is now offered by Micro Focus, a separately owned and operated company.  Any reference to the HP and Hewlett Packard Enterprise/HPE marks is historical in nature, and the HP and Hewlett Packard Enterprise/HPE marks are the property of their respective owners.
+Certain versions of software accessible here may contain branding from Hewlett-Packard Company (now HP Inc.) and Hewlett Packard Enterprise Company. 
+This software was acquired by Micro Focus on September 1, 2017, and is now offered by OpenText. 
+Any reference to the HP and Hewlett Packard Enterprise/HPE marks is historical in nature, and the HP and Hewlett Packard Enterprise/HPE marks are the property of their respective owners.
 
 
