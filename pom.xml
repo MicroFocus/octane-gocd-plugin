@@ -109,7 +109,7 @@
 				<version>3.8.1</version>
 				<configuration>
 					<source>${maven.compiler.plugin.version}</source>
-					<target>${maven.compiler.plugin.version}</target>					
+					<target>${maven.compiler.plugin.version}</target>
 				</configuration>
 			</plugin>
 
@@ -283,7 +283,7 @@
 						<extensions>true</extensions>
 						<configuration>
 							<serverId>release-repository</serverId>
-							<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+							<nexusUrl>https://ossrh-staging-api.central.sonatype.com</nexusUrl>
 							<autoReleaseAfterClose>true</autoReleaseAfterClose>
 						</configuration>
 					</plugin>
